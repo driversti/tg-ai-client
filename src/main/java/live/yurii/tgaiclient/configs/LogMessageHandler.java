@@ -1,4 +1,4 @@
-package live.yurii.tgaiclient;
+package live.yurii.tgaiclient.configs;
 
 import lombok.extern.slf4j.Slf4j;
 import org.drinkless.tdlib.Client;

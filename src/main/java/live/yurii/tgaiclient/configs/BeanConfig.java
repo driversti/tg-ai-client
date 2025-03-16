@@ -1,6 +1,9 @@
-package live.yurii.tgaiclient;
+package live.yurii.tgaiclient.configs;
 
+import live.yurii.tgaiclient.common.UpdatePublisher;
 import live.yurii.tgaiclient.authorization.TelegramCredentials;
+import live.yurii.tgaiclient.errorhandling.DefaultExceptionHandler;
+import live.yurii.tgaiclient.errorhandling.UpdateExceptionHandler;
 import lombok.extern.slf4j.Slf4j;
 import org.drinkless.tdlib.Client;
 import org.drinkless.tdlib.TdApi;
