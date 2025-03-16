@@ -1,0 +1,29 @@
+spring:
+  application:
+    name: tg-ai-client
+
+app:
+  telegram:
+    client:
+      developerId: ${DEVELOPER_ID}
+      phoneNumber: ${PHONE_NUMBER}
+      email: ${EMAIL}
+      password: ${PASSWORD}
+      apiId: ${API_ID}
+      apiHash: ${API_HASH}
+      databaseDirectory: "tdlib_db"
+      useMessageDatabase: true
+      useSecretChats: true
+      systemLanguageCode: "en"
+      deviceModel: "Desktop"
+      applicationVersion: "1.0"
+      botToken: ${N8N_HOMELAB_BOT_TOKEN}
+logging:
+  level:
+    root: DEBUG
+    live:
+      yurii:
+        tgaiclient: DEBUG
+    org:
+      drinkless:
+        tdlib: DEBUG
