@@ -1,6 +1,6 @@
 package live.yurii.tgaiclient.configs;
 
-import live.yurii.tgaiclient.common.UpdatePublisher;
+import live.yurii.tgaiclient.common.MainUpdateHandler;
 import live.yurii.tgaiclient.authorization.TelegramCredentials;
 import live.yurii.tgaiclient.errorhandling.DefaultExceptionHandler;
 import live.yurii.tgaiclient.errorhandling.UpdateExceptionHandler;
@@ -19,7 +19,7 @@ import java.io.IOException;
 public class BeanConfig {
 
   @Bean
-  Client telegramClient(UpdatePublisher updatePublisher) {
+  Client telegramClient(MainUpdateHandler mainUpdateHandler) {
     Client.setLogMessageHandler(0, new LogMessageHandler());
 
     // disable TDLib log and redirect fatal errors and plain log messages to a file
@@ -30,7 +30,7 @@ public class BeanConfig {
       throw new IOError(new IOException("Write access to the current directory is required"));
     }
 
-    return Client.create(updatePublisher, new UpdateExceptionHandler(), new DefaultExceptionHandler());
+    return Client.create(mainUpdateHandler, new UpdateExceptionHandler(), new DefaultExceptionHandler());
   }
 
   @Bean
