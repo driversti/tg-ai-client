@@ -1,39 +1,26 @@
 package live.yurii.tgaiclient.configs;
 
-import live.yurii.tgaiclient.errorhandling.ErrorHandler;
-import live.yurii.tgaiclient.handlers.LogMessageHandler;
-import live.yurii.tgaiclient.handlers.UpdateManager;
-import live.yurii.tgaiclient.handlers.UpdateOptionHandler;
+import live.yurii.tgaiclient.common.MainUpdateHandler;
+import live.yurii.tgaiclient.authorization.TelegramCredentials;
+import live.yurii.tgaiclient.errorhandling.DefaultExceptionHandler;
+import live.yurii.tgaiclient.errorhandling.UpdateExceptionHandler;
 import lombok.extern.slf4j.Slf4j;
 import org.drinkless.tdlib.Client;
 import org.drinkless.tdlib.TdApi;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
 import java.io.IOError;
 import java.io.IOException;
-import java.net.http.HttpClient;
-
-import static live.yurii.tgaiclient.utils.JsonUtil.toJson;
 
 @Slf4j
 @Configuration
 public class BeanConfig {
 
   @Bean
-  LogMessageHandler logMessageHandler() {
-    return new LogMessageHandler();
-  }
-
-  @Bean
-  UpdateManager updateManager() {
-    return new UpdateManager();
-  }
-
-  @Bean
-  Client tClient(Client.LogMessageHandler logMessageHandler, UpdateManager updateManager) {
-    // set log message handler to handle only fatal errors (0) and plain log messages (-1)
-    Client.setLogMessageHandler(0, logMessageHandler);
+  Client telegramClient(MainUpdateHandler mainUpdateHandler) {
+    Client.setLogMessageHandler(0, new LogMessageHandler());
 
     // disable TDLib log and redirect fatal errors and plain log messages to a file
     try {
@@ -42,28 +29,19 @@ public class BeanConfig {
     } catch (Client.ExecutionException error) {
       throw new IOError(new IOException("Write access to the current directory is required"));
     }
-    return Client.create(updateManager,
-        throwable -> log.error("1: {}", toJson(throwable)),
-        throwable -> log.error("2: {}", toJson(throwable))
-    );
+
+    return Client.create(mainUpdateHandler, new UpdateExceptionHandler(), new DefaultExceptionHandler());
   }
 
   @Bean
-  HttpClient webClient() {
-    return HttpClient.newHttpClient();
+  TelegramCredentials telegramCredentials(@Value("${app.telegram.client.developerId}") int developerId,
+                                          @Value("${app.telegram.client.phoneNumber}") String phoneNumber,
+                                          @Value("${app.telegram.client.email}") String email,
+                                          @Value("${app.telegram.client.password}") String password,
+                                          @Value("${app.telegram.client.apiId}") int apiId,
+                                          @Value("${app.telegram.client.apiHash}") String apiHash,
+                                          @Value("${app.telegram.client.botToken}") String botToken) {
+    return new TelegramCredentials(developerId, phoneNumber, email, password, apiId, apiHash, botToken);
   }
 
-  @Bean
-  UpdateOptionHandler updateOptionHandler(UpdateManager updateManager) {
-    UpdateOptionHandler updateOptionHandler = new UpdateOptionHandler();
-    updateManager.registerHandler(updateOptionHandler);
-    return updateOptionHandler;
-  }
-
-  @Bean
-  ErrorHandler errorHandler(UpdateManager updateManager) {
-    ErrorHandler errorHandler = new ErrorHandler();
-    updateManager.registerHandler(errorHandler);
-    return errorHandler;
-  }
 }
