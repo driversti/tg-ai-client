@@ -20,7 +20,7 @@ app:
       botToken: ${N8N_HOMELAB_BOT_TOKEN}
 logging:
   level:
-    root: INFO
+    root: DEBUG
     live:
       yurii:
         tgaiclient: DEBUG

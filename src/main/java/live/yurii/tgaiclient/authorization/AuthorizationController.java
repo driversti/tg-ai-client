@@ -2,38 +2,39 @@ package live.yurii.tgaiclient.authorization;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 @Slf4j
 @RestController
-@RequestMapping("/auth")
+@RequestMapping
 @RequiredArgsConstructor
 public class AuthorizationController {
 
-  private final ApplicationEventPublisher publisher;
+  private final AuthorizationHandler authorizationHandler;
 
-  @PostMapping("/login")
-  public ResponseEntity<String> login() {
-    log.debug("Login request received");
-    publisher.publishEvent(new LoginRequestEvent(this));
-    return ResponseEntity.accepted().body("Login request accepted. POST OTP code to '/auth/otp'");
+  @GetMapping("/login")
+  ResponseEntity<String> init() {
+    log.info("Authorization request received.");
+    authorizationHandler.init();
+    return ResponseEntity.accepted().body("Authorization initialized. Use POST /login/otp when receive.");
   }
 
   @PostMapping("/otp")
-  public ResponseEntity<String> verifyOtp(String code) {
-    log.debug("OTP code received: {}", code);
-    publisher.publishEvent(new OtpCodeReceivedEvent(this, code));
-    return ResponseEntity.accepted().body("OTP code accepted");
+  ResponseEntity<String> loginWithOtp(@RequestBody String code) {
+    log.info("Received otp code: {}", code);
+    authorizationHandler.loginWithOtp(code);
+    return ResponseEntity.accepted().build();
   }
 
-  @PostMapping("/logout")
-  public ResponseEntity<String> logout() {
-    log.debug("Logout request received");
-    publisher.publishEvent(new LogoutRequestEvent(this));
-    return ResponseEntity.accepted().body("Logout request accepted");
+  @GetMapping("/logout")
+  ResponseEntity<String> logout() {
+    log.info("Logging out...");
+    authorizationHandler.logout();
+    return ResponseEntity.accepted().body("Logout request accepted.");
   }
 }
