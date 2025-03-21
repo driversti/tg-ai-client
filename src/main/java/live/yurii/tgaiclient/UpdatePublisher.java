@@ -1,4 +1,4 @@
-package live.yurii.tgaiclient.common;
+package live.yurii.tgaiclient;
 
 import live.yurii.tgaiclient.authorization.UpdateAuthorizationStateEvent;
 import live.yurii.tgaiclient.system.UpdateOptionEvent;
