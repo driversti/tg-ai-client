@@ -21,7 +21,7 @@ public class ChatHandler {
     if (update == null || update.getConstructor() != TdApi.UpdateNewChat.CONSTRUCTOR) {
       return;
     }
-    log.info("Chat \"{}\" has new updates", update.chat.title);
+    log.trace("Chat \"{}\" has new updates", update.chat.title);
     storage.putChat(update.chat);
   }
 
@@ -79,6 +79,60 @@ public class ChatHandler {
           log.info("Chat {} ({}) renamed to {}", chat.title, chat.id, update.title);
           chat.title = update.title;
         });
+  }
+
+  @EventListener
+  public void onUpdateChatActiveStoriesEvent(UpdateChatActiveStoriesEvent event) {
+    TdApi.UpdateChatActiveStories update = event.getUpdate();
+    if (update == null || update.getConstructor() != TdApi.UpdateChatActiveStories.CONSTRUCTOR) {
+      return;
+    }
+    TdApi.ChatActiveStories activeStories = update.activeStories;
+    log.trace("Chat {} has {} active stories", activeStories.chatId, activeStories.stories.length);
+  }
+
+  @EventListener
+  public void onUpdateChatActionEvent(UpdateChatActionEvent event) {
+    TdApi.UpdateChatAction update = event.getUpdate();
+    if (update == null || update.getConstructor() != TdApi.UpdateChatAction.CONSTRUCTOR) {
+      return;
+    }
+    log.trace("Chat {} has new action: {}", update.chatId, update.action);
+  }
+
+  @EventListener
+  public void onUpdateChatNotificationSettingsEvent(UpdateChatNotificationSettingsEvent event) {
+    TdApi.UpdateChatNotificationSettings update = event.getUpdate();
+    if (update == null || update.getConstructor() != TdApi.UpdateChatNotificationSettings.CONSTRUCTOR) {
+      return;
+    }
+    String chatTitle = storage.findChat(update.chatId).map(c -> c.title).orElse("");
+    log.trace("Chat {} ({}) has new notification settings", chatTitle, update.chatId);
+  }
+
+  @EventListener
+  public void onUpdateChatPositionEvent(UpdateChatPositionEvent event) {
+    // ignore for now
+  }
+
+  @EventListener
+  public void onUpdateChatReadOutboxEvent(UpdateChatReadOutboxEvent event) {
+    // ignore for now
+  }
+
+  @EventListener
+  public void onUpdateUnreadChatCountEvent(UpdateUnreadChatCountEvent event) {
+    // ignore for now
+  }
+
+  @EventListener
+  public void onUpdateChatRemovedFromListEvent(UpdateChatRemovedFromListEvent event) {
+    // ignore for now
+  }
+
+  @EventListener
+  public void onUpdateHavePendingNotificationsEvent(UpdateHavePendingNotificationsEvent event) {
+    // ignore for now
   }
 
   private void handleAddedToChatMainList(TdApi.UpdateChatAddedToList update) {

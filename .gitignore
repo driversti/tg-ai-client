@@ -36,4 +36,5 @@ build/
 **/*.log
 **/*.jar
 **/*.env
-tdlib/
+tdlib*/
+src/main/resources/ignored_chats.json
