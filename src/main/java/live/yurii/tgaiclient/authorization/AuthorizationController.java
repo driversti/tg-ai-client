@@ -5,6 +5,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -23,8 +24,8 @@ public class AuthorizationController {
     return ResponseEntity.accepted().body("Login request accepted. POST OTP code to '/auth/otp'");
   }
 
-  @PostMapping("/otp")
-  public ResponseEntity<String> verifyOtp(String code) {
+  @PostMapping(value = "/otp", consumes = "text/plain", produces = "text/plain")
+  public ResponseEntity<String> verifyOtp(@RequestBody String code) {
     log.debug("OTP code received: {}", code);
     publisher.publishEvent(new OtpCodeReceivedEvent(this, code));
     return ResponseEntity.accepted().body("OTP code accepted");

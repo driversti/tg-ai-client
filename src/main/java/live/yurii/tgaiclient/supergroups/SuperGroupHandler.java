@@ -22,4 +22,14 @@ public class SuperGroupHandler {
     }
     storage.putSuperGroup(supergroup.supergroup);
   }
+
+  @EventListener
+  public void onUpdateSupergroupFullInfoEvent(UpdateSupergroupFullInfoEvent event) {
+    TdApi.UpdateSupergroupFullInfo info = event.getUpdate();
+    if (info == null || info.getConstructor() != TdApi.UpdateSupergroupFullInfo.CONSTRUCTOR) {
+      return;
+    }
+    log.trace("UpdateSupergroupFullInfoEvent: {}", info.supergroupFullInfo.description);
+    //storage.putSuperGroupFullInfo(supergroupFullInfo.supergroupFullInfo);
+  }
 }

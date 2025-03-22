@@ -8,6 +8,7 @@ import org.springframework.context.event.EventListener;
 import org.springframework.stereotype.Component;
 
 import java.util.Arrays;
+import java.util.Map;
 import java.util.Optional;
 import java.util.stream.LongStream;
 
@@ -21,6 +22,7 @@ public class MessageHandler {
   private final MessageBuffer messageBuffer = new MessageBuffer(10000);
 
   private final Storage storage;
+  private final Map<Long, String> ignoredChats;
 
   @EventListener
   public void onUpdateMessageReceived(MessageReceivedEvent event) {
@@ -53,11 +55,15 @@ public class MessageHandler {
     if (update == null || update.getConstructor() != TdApi.UpdateNewMessage.CONSTRUCTOR) {
       return;
     }
-    String chatTitle = storage.chatTitle(update.message.chatId);
+    long chatId = update.message.chatId;
+    if (ignoredChats.containsKey(chatId)) {
+      return;
+    }
+    String chatTitle = storage.chatTitle(chatId);
     String author = getFrom(update.message);
     String content = getContent(update.message.content);
-    log.info("{}. {}: {}", chatTitle, author, content);
-    messageBuffer.addMessage(new MessageBuffer.BufferedMessage(update.message.id).withChatId(update.message.chatId)
+    log.info("{} ({}). {}: {}", chatTitle, chatId, author, content);
+    messageBuffer.addMessage(new MessageBuffer.BufferedMessage(update.message.id).withChatId(chatId)
         .withChatTitle(chatTitle).withAuthor(author).withContent(content));
   }
 
@@ -80,8 +86,24 @@ public class MessageHandler {
     if (update == null || update.getConstructor() != TdApi.UpdateMessageContent.CONSTRUCTOR) {
       return;
     }
-    log.info("Message {} content updated in chat {}. New content: {}",
-        update.messageId, update.chatId, getContent(update.newContent));
+    if (ignoredChats.containsKey(update.chatId)) {
+      return;
+    }
+    String title = storage.findChat(update.chatId).map(c -> c.title).orElse("");
+    log.info("Message {} content updated in chat {} ({}). New content: {}",
+        update.messageId, title, update.chatId, getContent(update.newContent));
+  }
+
+  @EventListener
+  public void onUpdateMessageEditedEvent(UpdateMessageEditedEvent event) {
+    TdApi.UpdateMessageEdited update = event.getUpdate();
+    if (update == null || update.getConstructor() != TdApi.UpdateMessageEdited.CONSTRUCTOR) {
+      return;
+    }
+    if (ignoredChats.containsKey(update.chatId)) {
+      return;
+    }
+    // TODO: implement adding new version to a DB. Every edition should have a reference to the original and order of the edition
   }
 
   private String getFrom(TdApi.Message message) {
@@ -103,10 +125,10 @@ public class MessageHandler {
   private static String getContent(TdApi.MessageContent content) {
     return switch (content.getConstructor()) {
       case TdApi.MessageText.CONSTRUCTOR -> ((TdApi.MessageText) content).text.text;
-      case TdApi.MessagePhoto.CONSTRUCTOR -> "Photo message";
-      case TdApi.MessageVideo.CONSTRUCTOR -> "Video message";
+      case TdApi.MessagePhoto.CONSTRUCTOR -> "Photo message: " + ((TdApi.MessagePhoto) content).caption;
+      case TdApi.MessageVideo.CONSTRUCTOR -> "Video message: " + ((TdApi.MessageVideo) content).caption;
       case TdApi.MessageDocument.CONSTRUCTOR -> "Document message";
-      default -> "Unknown content";
+      default -> "Unsupported content";
     };
   }
 }

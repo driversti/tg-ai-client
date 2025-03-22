@@ -9,7 +9,7 @@ import org.springframework.stereotype.Component;
 @Slf4j
 @Component
 @RequiredArgsConstructor
-public class UpdateOptionHandler {
+public class SystemEventsHandler {
 
   @EventListener
   public void onUpdateOptionEvent(UpdateOptionEvent event) {
@@ -23,15 +23,27 @@ public class UpdateOptionHandler {
     }
   }
 
-  private void print(String name, String value) {
+  @EventListener
+  public void onUpdateConnectionStateEvent(UpdateConnectionStateEvent event) {
+    TdApi.UpdateConnectionState update = event.getUpdate();
+    if (update == null || update.getConstructor() != TdApi.UpdateConnectionState.CONSTRUCTOR) {
+      return;
+    }
+    log.debug("Actual connection state: {}", resolveState(update.state));
+  }
+
+  private void print(String name, Object value) {
     log.info("{}: {}", name, value);
   }
 
-  private void print(String name, long value) {
-    log.info("{}: {}", name, value);
-  }
-
-  private void print(String name, boolean value) {
-    log.info("{}: {}", name, value);
+  private String resolveState(TdApi.ConnectionState state) {
+    return switch (state.getConstructor()) {
+      case TdApi.ConnectionStateConnecting.CONSTRUCTOR -> "Connecting...";
+      case TdApi.ConnectionStateConnectingToProxy.CONSTRUCTOR -> "Connecting to proxy...";
+      case TdApi.ConnectionStateWaitingForNetwork.CONSTRUCTOR -> "Waiting for network";
+      case TdApi.ConnectionStateUpdating.CONSTRUCTOR -> "Updating";
+      case TdApi.ConnectionStateReady.CONSTRUCTOR -> "Ready";
+      default -> "Unsupported state";
+    };
   }
 }
