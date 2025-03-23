@@ -135,6 +135,21 @@ public class ChatHandler {
     // ignore for now
   }
 
+  @EventListener
+  public void onUpdateChatAvailableReactionsEvent(UpdateChatAvailableReactionsEvent event) {
+    // ignore for now
+  }
+
+  @EventListener
+  public void onUpdateChatIsTranslatableEvent(UpdateChatIsTranslatableEvent event) {
+    // ignore for now
+  }
+
+  @EventListener
+  public void onUpdateChatMessageSenderEvent(UpdateChatMessageSenderEvent event) {
+    // ignore for now
+  }
+
   private void handleAddedToChatMainList(TdApi.UpdateChatAddedToList update) {
     log.trace("Chat {} added to main list", update.chatId);
   }

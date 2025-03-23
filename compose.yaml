@@ -1,5 +1,12 @@
 services:
-  ollama:
-    image: 'ollama/ollama:latest'
+  telegram-db:
+    image: ankane/pgvector
+    container_name: telegram-db
     ports:
-      - '11434'
+      - '5432:5432'
+    environment:
+      POSTGRES_USER: ${POSTGRES_V_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_V_PASSWORD}
+      POSTGRES_DB: ${POSTGRES_V_DB}
+    volumes:
+      - ./telegram-db:/var/lib/postgresql/data

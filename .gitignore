@@ -38,3 +38,5 @@ build/
 **/*.env
 tdlib*/
 src/main/resources/ignored_chats.json
+telegram-db
+

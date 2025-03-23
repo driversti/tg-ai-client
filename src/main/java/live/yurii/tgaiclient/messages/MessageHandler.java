@@ -25,15 +25,6 @@ public class MessageHandler {
   private final Map<Long, String> ignoredChats;
 
   @EventListener
-  public void onUpdateMessageReceived(MessageReceivedEvent event) {
-    TdApi.Message message = event.getMessage();
-    if (message == null || message.getConstructor() != TdApi.Message.CONSTRUCTOR) {
-      return;
-    }
-    log.info("Message {} received. From: {}, content: {}", message.id, getFrom(message), getContent(message.content));
-  }
-
-  @EventListener
   public void onUpdateDeleteMessagesEvent(UpdateDeleteMessagesEvent event) {
     TdApi.UpdateDeleteMessages update = event.getUpdate();
     if (update == null || update.getConstructor() != TdApi.UpdateDeleteMessages.CONSTRUCTOR) {
@@ -103,7 +94,10 @@ public class MessageHandler {
     if (ignoredChats.containsKey(update.chatId)) {
       return;
     }
-    // TODO: implement adding new version to a DB. Every edition should have a reference to the original and order of the edition
+    // I'm not sure if it is useful. When a message is edited, we receive an UpdateMessageContent event.
+    // Why does this event exist?
+    String title = storage.findChat(update.chatId).map(c -> c.title).orElse("");
+    log.info("Message {} edited in chat {} ({})", update.messageId, title, update.chatId);
   }
 
   private String getFrom(TdApi.Message message) {
@@ -125,9 +119,25 @@ public class MessageHandler {
   private static String getContent(TdApi.MessageContent content) {
     return switch (content.getConstructor()) {
       case TdApi.MessageText.CONSTRUCTOR -> ((TdApi.MessageText) content).text.text;
-      case TdApi.MessagePhoto.CONSTRUCTOR -> "Photo message: " + ((TdApi.MessagePhoto) content).caption;
-      case TdApi.MessageVideo.CONSTRUCTOR -> "Video message: " + ((TdApi.MessageVideo) content).caption;
+      case TdApi.MessagePhoto.CONSTRUCTOR -> "Photo message: " + ((TdApi.MessagePhoto) content).caption.text;
+      case TdApi.MessageVideo.CONSTRUCTOR -> "Video message: " + ((TdApi.MessageVideo) content).caption.text;
       case TdApi.MessageDocument.CONSTRUCTOR -> "Document message";
+      case TdApi.MessageAudio.CONSTRUCTOR -> "Audio message";
+      case TdApi.MessageVoiceNote.CONSTRUCTOR -> "Voice note message";
+      case TdApi.MessageAnimation.CONSTRUCTOR -> "Animation message";
+      case TdApi.MessageSticker.CONSTRUCTOR -> "Sticker message";
+      case TdApi.MessageLocation.CONSTRUCTOR -> "Location message";
+      case TdApi.MessageVenue.CONSTRUCTOR -> "Venue message";
+      case TdApi.MessageContact.CONSTRUCTOR -> "Contact message";
+      case TdApi.MessageGame.CONSTRUCTOR -> "Game message";
+      case TdApi.MessagePoll.CONSTRUCTOR -> "Poll message";
+      case TdApi.MessageInvoice.CONSTRUCTOR -> "Invoice message";
+      case TdApi.MessageCall.CONSTRUCTOR -> "Call message";
+      case TdApi.MessageStory.CONSTRUCTOR -> "Story message";
+      case TdApi.MessagePinMessage.CONSTRUCTOR -> "Pin message";
+      case TdApi.MessageScreenshotTaken.CONSTRUCTOR -> "Screenshot taken message";
+      case TdApi.MessageChatShared.CONSTRUCTOR -> "Chat shared message";
+      case TdApi.MessageUnsupported.CONSTRUCTOR -> "Unsupported message";
       default -> "Unsupported content";
     };
   }

@@ -5,7 +5,10 @@ import live.yurii.tgaiclient.basicgroups.UpdateBasicGroupEvent;
 import live.yurii.tgaiclient.chats.UpdateChatActionEvent;
 import live.yurii.tgaiclient.chats.UpdateChatActiveStoriesEvent;
 import live.yurii.tgaiclient.chats.UpdateChatAddedToListEvent;
+import live.yurii.tgaiclient.chats.UpdateChatAvailableReactionsEvent;
+import live.yurii.tgaiclient.chats.UpdateChatIsTranslatableEvent;
 import live.yurii.tgaiclient.chats.UpdateChatLastMessageEvent;
+import live.yurii.tgaiclient.chats.UpdateChatMessageSenderEvent;
 import live.yurii.tgaiclient.chats.UpdateChatNotificationSettingsEvent;
 import live.yurii.tgaiclient.chats.UpdateChatPositionEvent;
 import live.yurii.tgaiclient.chats.UpdateChatReadInboxEvent;
@@ -110,6 +113,12 @@ public class MainUpdateHandler implements Client.ResultHandler {
           publisher.publishEvent(new UpdateChatRemovedFromListEvent(this, (TdApi.UpdateChatRemovedFromList) object));
       case TdApi.UpdateHavePendingNotifications.CONSTRUCTOR ->
           publisher.publishEvent(new UpdateHavePendingNotificationsEvent(this, (TdApi.UpdateHavePendingNotifications) object));
+      case TdApi.UpdateChatAvailableReactions.CONSTRUCTOR ->
+          publisher.publishEvent(new UpdateChatAvailableReactionsEvent(this, (TdApi.UpdateChatAvailableReactions) object));
+      case TdApi.UpdateChatIsTranslatable.CONSTRUCTOR ->
+          publisher.publishEvent(new UpdateChatIsTranslatableEvent(this, (TdApi.UpdateChatIsTranslatable) object));
+      case TdApi.UpdateChatMessageSender.CONSTRUCTOR ->
+          publisher.publishEvent(new UpdateChatMessageSenderEvent(this, (TdApi.UpdateChatMessageSender) object));
 
       // basic groups
       case TdApi.UpdateBasicGroup.CONSTRUCTOR ->
