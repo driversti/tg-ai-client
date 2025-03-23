@@ -10,9 +10,9 @@ import org.springframework.web.bind.annotation.RestController;
 import java.util.List;
 
 @Slf4j
+@RequiredArgsConstructor
 @RestController
 @RequestMapping(value = "/users", consumes = "application/json", produces = "application/json")
-@RequiredArgsConstructor
 public class UsersController {
 
   private final UserRestService service;

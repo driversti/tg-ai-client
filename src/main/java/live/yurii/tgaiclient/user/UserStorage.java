@@ -15,7 +15,6 @@ public class UserStorage {
   private final UserJpaRepository repository;
 
   public void save(UserEntity user) {
-    log.debug("Saving user: {}", user);
     repository.save(user);
   }
 

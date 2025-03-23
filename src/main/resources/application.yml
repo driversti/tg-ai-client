@@ -1,4 +1,6 @@
 spring:
+  # https://docs.spring.io/spring-ai/reference/api/embeddings/ollama-embeddings.html
+
   application:
     name: tg-ai-client
   datasource:

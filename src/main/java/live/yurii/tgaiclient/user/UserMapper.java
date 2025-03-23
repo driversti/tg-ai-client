@@ -29,8 +29,7 @@ public class UserMapper {
   }
 
   public UserEntity toEntity(TdApi.User user) {
-    return UserEntity.builder()
-        .id(user.id)
+    return UserEntity.create(user.id)
         .username(Optional.ofNullable(user.usernames).map(u -> u.activeUsernames).map(u -> u[0]).orElse(null))
         .firstName(user.firstName)
         .lastName(user.lastName)
@@ -41,8 +40,7 @@ public class UserMapper {
         .closeFriend(user.isCloseFriend)
         .restrictionReason(user.restrictionReason)
         .languageCode(user.languageCode)
-        .userType(resolveUserType(user.type))
-        .build();
+        .userType(resolveUserType(user.type));
   }
 
   private UserEntity.UserType resolveUserType(TdApi.UserType type) {
@@ -56,5 +54,9 @@ public class UserMapper {
         yield UserEntity.UserType.UNKNOWN;
       }
     };
+  }
+
+  public void updateEntity(UserEntity user, TdApi.UserFullInfo fullInfo) {
+    // TODO: map bio, birthdate
   }
 }

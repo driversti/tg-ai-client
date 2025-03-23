@@ -1,5 +1,7 @@
 package live.yurii.tgaiclient.messages;
 
+import live.yurii.tgaiclient.chats.ChatStorage;
+import live.yurii.tgaiclient.common.SenderStorage;
 import live.yurii.tgaiclient.common.Storage;
 import live.yurii.tgaiclient.user.UserStorage;
 import lombok.RequiredArgsConstructor;
@@ -22,7 +24,11 @@ public class MessageHandler {
   private final MessageBuffer messageBuffer = new MessageBuffer(10000);
 
   private final Storage storage;
+  private final SenderStorage senderStorage;
   private final UserStorage userStorage;
+  private final ChatStorage chatStorage;
+  private final MessageStorage messageStorage;
+  private final MessageMapper messageMapper;
   private final Map<Long, String> ignoredChats;
 
   @EventListener
@@ -51,12 +57,17 @@ public class MessageHandler {
     if (ignoredChats.containsKey(chatId)) {
       return;
     }
-    String chatTitle = storage.chatTitle(chatId);
-    String author = getFrom(update.message);
-    String content = getContent(update.message.content);
-    log.info("{} ({}). {}: {}", chatTitle, chatId, author, content);
-    messageBuffer.addMessage(new MessageBuffer.BufferedMessage(update.message.id).withChatId(chatId)
-        .withChatTitle(chatTitle).withAuthor(author).withContent(content));
+    String content = messageMapper.getContent(update.message.content);
+    long senderId = resolveSenderId(update.message.senderId);
+    senderStorage.findById(senderId)
+        .ifPresentOrElse(existingSender -> {
+          MessageEntity messageEntity = messageMapper.toEntity(update.message, existingSender);
+          // TODO: add embeddings
+          messageStorage.save(messageEntity);
+        }, () -> {
+          // TODO: add sender to storage
+          log.warn("Sender {} not found in storage. Message: {}", senderId, content);
+        });
   }
 
   @EventListener
@@ -83,7 +94,7 @@ public class MessageHandler {
     }
     String title = storage.findChat(update.chatId).map(c -> c.title).orElse("");
     log.info("Message {} content updated in chat {} ({}). New content: {}",
-        update.messageId, title, update.chatId, getContent(update.newContent));
+        update.messageId, title, update.chatId, messageMapper.getContent(update.newContent));
   }
 
   @EventListener
@@ -116,29 +127,14 @@ public class MessageHandler {
     };
   }
 
-  private static String getContent(TdApi.MessageContent content) {
-    return switch (content.getConstructor()) {
-      case TdApi.MessageText.CONSTRUCTOR -> ((TdApi.MessageText) content).text.text;
-      case TdApi.MessagePhoto.CONSTRUCTOR -> "Photo message: " + ((TdApi.MessagePhoto) content).caption.text;
-      case TdApi.MessageVideo.CONSTRUCTOR -> "Video message: " + ((TdApi.MessageVideo) content).caption.text;
-      case TdApi.MessageDocument.CONSTRUCTOR -> "Document message";
-      case TdApi.MessageAudio.CONSTRUCTOR -> "Audio message";
-      case TdApi.MessageVoiceNote.CONSTRUCTOR -> "Voice note message";
-      case TdApi.MessageAnimation.CONSTRUCTOR -> "Animation message";
-      case TdApi.MessageSticker.CONSTRUCTOR -> "Sticker message";
-      case TdApi.MessageLocation.CONSTRUCTOR -> "Location message";
-      case TdApi.MessageVenue.CONSTRUCTOR -> "Venue message";
-      case TdApi.MessageContact.CONSTRUCTOR -> "Contact message";
-      case TdApi.MessageGame.CONSTRUCTOR -> "Game message";
-      case TdApi.MessagePoll.CONSTRUCTOR -> "Poll message";
-      case TdApi.MessageInvoice.CONSTRUCTOR -> "Invoice message";
-      case TdApi.MessageCall.CONSTRUCTOR -> "Call message";
-      case TdApi.MessageStory.CONSTRUCTOR -> "Story message";
-      case TdApi.MessagePinMessage.CONSTRUCTOR -> "Pin message";
-      case TdApi.MessageScreenshotTaken.CONSTRUCTOR -> "Screenshot taken message";
-      case TdApi.MessageChatShared.CONSTRUCTOR -> "Chat shared message";
-      case TdApi.MessageUnsupported.CONSTRUCTOR -> "Unsupported message";
-      default -> "Unsupported content";
+  private long resolveSenderId(TdApi.MessageSender messageSender) {
+    return switch (messageSender.getConstructor()) {
+      case TdApi.MessageSenderUser.CONSTRUCTOR -> ((TdApi.MessageSenderUser) messageSender).userId;
+      case TdApi.MessageSenderChat.CONSTRUCTOR -> ((TdApi.MessageSenderChat) messageSender).chatId;
+      default -> {
+        log.warn("Unknown sender type: {}", messageSender);
+        yield -1;
+      }
     };
   }
 }

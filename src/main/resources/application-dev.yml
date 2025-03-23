@@ -6,3 +6,6 @@ spring:
       enabled: true
       file: compose.yaml
 
+logging:
+  file:
+    name: tg-ai-client-dev.log

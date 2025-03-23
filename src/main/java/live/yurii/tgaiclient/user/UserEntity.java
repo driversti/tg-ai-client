@@ -4,12 +4,11 @@ import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
-import jakarta.persistence.Id;
+import jakarta.persistence.PrimaryKeyJoinColumn;
 import jakarta.persistence.Table;
 import live.yurii.tgaiclient.common.JsonEscapable;
+import live.yurii.tgaiclient.common.SenderEntity;
 import lombok.AccessLevel;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
@@ -21,16 +20,11 @@ import java.util.Objects;
 
 @Entity
 @Table(name = "users")
+@PrimaryKeyJoinColumn(name = "id")
 @Getter
 @Setter
-@Builder
-@NoArgsConstructor
-@AllArgsConstructor
-public class UserEntity implements JsonEscapable { // Implement the interface
-
-  @Id
-  @Column(name = "id", nullable = false, updatable = false)
-  private Long id;
+@NoArgsConstructor(access = AccessLevel.PROTECTED)
+public class UserEntity extends SenderEntity implements JsonEscapable {
 
   @Column(name = "username")
   private String username;
@@ -69,7 +63,99 @@ public class UserEntity implements JsonEscapable { // Implement the interface
   @Enumerated(EnumType.STRING)
   @Column(name = "user_type", nullable = false)
   @JdbcTypeCode(SqlTypes.VARCHAR)
-  private UserType userType = UserType.UNKNOWN;
+  private UserType userType;
+
+  public UserEntity(Long id) {
+    super(id, SenderType.USER);
+    this.userType = UserType.UNKNOWN;
+  }
+
+  public static UserEntity create(Long id) {
+    return new UserEntity(id);
+  }
+
+  public UserEntity username(String username) {
+    this.username = username;
+    return this;
+  }
+
+  public UserEntity firstName(String firstName) {
+    this.firstName = firstName;
+    return this;
+  }
+
+  public UserEntity lastName(String lastName) {
+    this.lastName = lastName;
+    return this;
+  }
+
+  public UserEntity phoneNumber(String phoneNumber) {
+    this.phoneNumber = phoneNumber;
+    return this;
+  }
+
+  public UserEntity contact(Boolean contact) {
+    this.contact = contact;
+    return this;
+  }
+
+  public UserEntity mutualContact(Boolean mutualContact) {
+    this.mutualContact = mutualContact;
+    return this;
+  }
+
+  public UserEntity premium(Boolean premium) {
+    this.premium = premium;
+    return this;
+  }
+
+  public UserEntity closeFriend(Boolean closeFriend) {
+    this.closeFriend = closeFriend;
+    return this;
+  }
+
+  public UserEntity restrictionReason(String restrictionReason) {
+    this.restrictionReason = restrictionReason;
+    return this;
+  }
+
+  public UserEntity languageCode(String languageCode) {
+    this.languageCode = languageCode;
+    return this;
+  }
+
+  public UserEntity userType(UserType userType) {
+    this.userType = userType;
+    return this;
+  }
+
+  public String identifiableName() {
+    String fn = isNullOrEmpty(firstName) ? "" : firstName.trim();
+    String ln = isNullOrEmpty(lastName) ? "" : lastName.trim();
+    String u = isNullOrEmpty(username) ? "" : username.trim();
+    String pn = isNullOrEmpty(phoneNumber) ? "" : phoneNumber.trim();
+    String idStr = String.valueOf(id); // Safely convert Long to String
+
+    String coreString;
+
+    if (!fn.isEmpty() || !ln.isEmpty()) {
+      // fn ln (u, id, pn)
+      String namePart = (fn.isEmpty() ? "" : fn) + (fn.isEmpty() || ln.isEmpty() ? "" : " ") + (ln.isEmpty() ? "" : ln);
+      coreString = String.format("%s (%s, %s, %s)", namePart, u, idStr, pn);
+
+    } else if (!u.isEmpty()) {
+      // u (id, pn)
+      coreString = String.format("%s (%s, %s)", u, idStr, pn);
+    } else if (!pn.isEmpty()) {
+      // pn (id)
+      coreString = String.format("%s (%s)", pn, idStr);
+    } else {
+      // id
+      coreString = idStr;
+    }
+
+    return coreString.trim();
+  }
 
   @Override
   public String toString() {
@@ -121,6 +207,10 @@ public class UserEntity implements JsonEscapable { // Implement the interface
 
   public Boolean isCloseFriend() {
     return closeFriend;
+  }
+
+  private static boolean isNullOrEmpty(String str) {
+    return str == null || str.trim().isEmpty();
   }
 
   public enum UserType {
