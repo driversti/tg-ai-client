@@ -11,7 +11,7 @@ import java.util.Collection;
 @Slf4j
 @Service
 @RequiredArgsConstructor
-public class UserService {
+public class UserTelegramService {
 
   private final Storage storage;
 

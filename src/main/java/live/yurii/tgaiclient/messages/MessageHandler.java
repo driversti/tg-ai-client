@@ -1,13 +1,13 @@
 package live.yurii.tgaiclient.messages;
 
 import live.yurii.tgaiclient.common.Storage;
+import live.yurii.tgaiclient.user.UserStorage;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.drinkless.tdlib.TdApi;
 import org.springframework.context.event.EventListener;
 import org.springframework.stereotype.Component;
 
-import java.util.Arrays;
 import java.util.Map;
 import java.util.Optional;
 import java.util.stream.LongStream;
@@ -22,6 +22,7 @@ public class MessageHandler {
   private final MessageBuffer messageBuffer = new MessageBuffer(10000);
 
   private final Storage storage;
+  private final UserStorage userStorage;
   private final Map<Long, String> ignoredChats;
 
   @EventListener
@@ -103,9 +104,8 @@ public class MessageHandler {
   private String getFrom(TdApi.Message message) {
     return switch (message.senderId.getConstructor()) {
       case TdApi.MessageSenderUser.CONSTRUCTOR ->
-          format("user %s", storage.findUser(((TdApi.MessageSenderUser) message.senderId).userId)
-              .filter(u -> u.usernames != null)
-              .map(u -> format("%s (%s, %s %s)", Arrays.toString(u.usernames.activeUsernames), u.id, u.firstName, u.lastName))
+          format("user %s", userStorage.findUser(((TdApi.MessageSenderUser) message.senderId).userId)
+              .map(u -> format("%s (%s, %s %s)", u.getUsername(), u.getId(), u.getFirstName(), u.getLastName()))
               .orElse("🤷‍♂️"));
       case TdApi.MessageSenderChat.CONSTRUCTOR -> {
         long chatId = ((TdApi.MessageSenderChat) message.senderId).chatId;

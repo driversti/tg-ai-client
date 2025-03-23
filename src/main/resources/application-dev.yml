@@ -1,0 +1,8 @@
+spring:
+  application:
+    name: tg-ai-client-dev
+  docker:
+    compose:
+      enabled: true
+      file: compose.yaml
+
