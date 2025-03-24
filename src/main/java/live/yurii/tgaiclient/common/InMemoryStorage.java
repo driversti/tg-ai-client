@@ -4,6 +4,8 @@ import lombok.extern.slf4j.Slf4j;
 import org.drinkless.tdlib.TdApi;
 import org.springframework.stereotype.Component;
 
+import java.util.Collection;
+import java.util.List;
 import java.util.NavigableSet;
 import java.util.Optional;
 import java.util.TreeSet;
@@ -59,6 +61,11 @@ public class InMemoryStorage implements Storage {
   @Override
   public Optional<TdApi.User> findUser(long userId) {
     return Optional.ofNullable(users.get(userId));
+  }
+
+  @Override
+  public Collection<TdApi.User> getUsers() {
+    return users.values().stream().toList();
   }
 
   @Override

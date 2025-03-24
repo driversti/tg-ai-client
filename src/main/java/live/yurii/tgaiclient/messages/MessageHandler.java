@@ -1,13 +1,15 @@
 package live.yurii.tgaiclient.messages;
 
+import live.yurii.tgaiclient.chats.ChatStorage;
+import live.yurii.tgaiclient.common.SenderStorage;
 import live.yurii.tgaiclient.common.Storage;
+import live.yurii.tgaiclient.user.UserStorage;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.drinkless.tdlib.TdApi;
 import org.springframework.context.event.EventListener;
 import org.springframework.stereotype.Component;
 
-import java.util.Arrays;
 import java.util.Map;
 import java.util.Optional;
 import java.util.stream.LongStream;
@@ -22,16 +24,12 @@ public class MessageHandler {
   private final MessageBuffer messageBuffer = new MessageBuffer(10000);
 
   private final Storage storage;
+  private final SenderStorage senderStorage;
+  private final UserStorage userStorage;
+  private final ChatStorage chatStorage;
+  private final MessageStorage messageStorage;
+  private final MessageMapper messageMapper;
   private final Map<Long, String> ignoredChats;
-
-  @EventListener
-  public void onUpdateMessageReceived(MessageReceivedEvent event) {
-    TdApi.Message message = event.getMessage();
-    if (message == null || message.getConstructor() != TdApi.Message.CONSTRUCTOR) {
-      return;
-    }
-    log.info("Message {} received. From: {}, content: {}", message.id, getFrom(message), getContent(message.content));
-  }
 
   @EventListener
   public void onUpdateDeleteMessagesEvent(UpdateDeleteMessagesEvent event) {
@@ -59,12 +57,17 @@ public class MessageHandler {
     if (ignoredChats.containsKey(chatId)) {
       return;
     }
-    String chatTitle = storage.chatTitle(chatId);
-    String author = getFrom(update.message);
-    String content = getContent(update.message.content);
-    log.info("{} ({}). {}: {}", chatTitle, chatId, author, content);
-    messageBuffer.addMessage(new MessageBuffer.BufferedMessage(update.message.id).withChatId(chatId)
-        .withChatTitle(chatTitle).withAuthor(author).withContent(content));
+    String content = messageMapper.getContent(update.message.content);
+    long senderId = resolveSenderId(update.message.senderId);
+    senderStorage.findById(senderId)
+        .ifPresentOrElse(existingSender -> {
+          MessageEntity messageEntity = messageMapper.toEntity(update.message, existingSender);
+          // TODO: add embeddings
+          messageStorage.save(messageEntity);
+        }, () -> {
+          // TODO: add sender to storage
+          log.warn("Sender {} not found in storage. Message: {}", senderId, content);
+        });
   }
 
   @EventListener
@@ -91,7 +94,7 @@ public class MessageHandler {
     }
     String title = storage.findChat(update.chatId).map(c -> c.title).orElse("");
     log.info("Message {} content updated in chat {} ({}). New content: {}",
-        update.messageId, title, update.chatId, getContent(update.newContent));
+        update.messageId, title, update.chatId, messageMapper.getContent(update.newContent));
   }
 
   @EventListener
@@ -103,15 +106,17 @@ public class MessageHandler {
     if (ignoredChats.containsKey(update.chatId)) {
       return;
     }
-    // TODO: implement adding new version to a DB. Every edition should have a reference to the original and order of the edition
+    // I'm not sure if it is useful. When a message is edited, we receive an UpdateMessageContent event.
+    // Why does this event exist?
+    String title = storage.findChat(update.chatId).map(c -> c.title).orElse("");
+    log.info("Message {} edited in chat {} ({})", update.messageId, title, update.chatId);
   }
 
   private String getFrom(TdApi.Message message) {
     return switch (message.senderId.getConstructor()) {
       case TdApi.MessageSenderUser.CONSTRUCTOR ->
-          format("user %s", storage.findUser(((TdApi.MessageSenderUser) message.senderId).userId)
-              .filter(u -> u.usernames != null)
-              .map(u -> format("%s (%s, %s %s)", Arrays.toString(u.usernames.activeUsernames), u.id, u.firstName, u.lastName))
+          format("user %s", userStorage.findUser(((TdApi.MessageSenderUser) message.senderId).userId)
+              .map(u -> format("%s (%s, %s %s)", u.getUsername(), u.getId(), u.getFirstName(), u.getLastName()))
               .orElse("🤷‍♂️"));
       case TdApi.MessageSenderChat.CONSTRUCTOR -> {
         long chatId = ((TdApi.MessageSenderChat) message.senderId).chatId;
@@ -122,13 +127,14 @@ public class MessageHandler {
     };
   }
 
-  private static String getContent(TdApi.MessageContent content) {
-    return switch (content.getConstructor()) {
-      case TdApi.MessageText.CONSTRUCTOR -> ((TdApi.MessageText) content).text.text;
-      case TdApi.MessagePhoto.CONSTRUCTOR -> "Photo message: " + ((TdApi.MessagePhoto) content).caption;
-      case TdApi.MessageVideo.CONSTRUCTOR -> "Video message: " + ((TdApi.MessageVideo) content).caption;
-      case TdApi.MessageDocument.CONSTRUCTOR -> "Document message";
-      default -> "Unsupported content";
+  private long resolveSenderId(TdApi.MessageSender messageSender) {
+    return switch (messageSender.getConstructor()) {
+      case TdApi.MessageSenderUser.CONSTRUCTOR -> ((TdApi.MessageSenderUser) messageSender).userId;
+      case TdApi.MessageSenderChat.CONSTRUCTOR -> ((TdApi.MessageSenderChat) messageSender).chatId;
+      default -> {
+        log.warn("Unknown sender type: {}", messageSender);
+        yield -1;
+      }
     };
   }
 }

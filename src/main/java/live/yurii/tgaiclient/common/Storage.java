@@ -2,6 +2,7 @@ package live.yurii.tgaiclient.common;
 
 import org.drinkless.tdlib.TdApi;
 
+import java.util.Collection;
 import java.util.Optional;
 
 public interface Storage {
@@ -17,6 +18,8 @@ public interface Storage {
   void putUser(TdApi.User user);
 
   Optional<TdApi.User> findUser(long userId);
+
+  Collection<TdApi.User> getUsers();
 
   void updateUserStatus(long userId, TdApi.UserStatus status);
 

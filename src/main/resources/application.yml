@@ -1,6 +1,18 @@
 spring:
+  # https://docs.spring.io/spring-ai/reference/api/embeddings/ollama-embeddings.html
+
   application:
     name: tg-ai-client
+  datasource:
+    url: jdbc:postgresql://${POSTGRES_V_HOST}:${POSTGRES_V_PORT}/${POSTGRES_V_DB}
+    username: ${POSTGRES_V_USER}
+    password: ${POSTGRES_V_PASSWORD}
+  jpa:
+    hibernate:
+      ddl-auto: validate
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.PostgreSQLDialect
 
 app:
   telegram:
@@ -18,7 +30,10 @@ app:
       deviceModel: "Desktop"
       applicationVersion: "1.0"
       botToken: ${N8N_HOMELAB_BOT_TOKEN}
+
 logging:
+  file:
+    name: tg-ai-client.log
   level:
     root: INFO
     live:

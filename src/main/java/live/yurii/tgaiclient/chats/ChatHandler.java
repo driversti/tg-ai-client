@@ -1,6 +1,8 @@
 package live.yurii.tgaiclient.chats;
 
 import live.yurii.tgaiclient.common.InMemoryStorage;
+import live.yurii.tgaiclient.folders.FolderEntity;
+import live.yurii.tgaiclient.folders.FolderStorage;
 import live.yurii.tgaiclient.messages.UpdateUnreadMessageCountEvent;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -14,6 +16,9 @@ import org.springframework.stereotype.Component;
 public class ChatHandler {
 
   private final InMemoryStorage storage;
+  private final ChatStorage chatStorage;
+  private final ChatMapper chatMapper;
+  private final FolderStorage folderStorage;
 
   @EventListener
   public void onUpdateNewChatEvent(UpdateNewChatEvent event) {
@@ -21,8 +26,9 @@ public class ChatHandler {
     if (update == null || update.getConstructor() != TdApi.UpdateNewChat.CONSTRUCTOR) {
       return;
     }
-    log.trace("Chat \"{}\" has new updates", update.chat.title);
-    storage.putChat(update.chat);
+    ChatEntity entity = chatMapper.toEntity(update.chat);
+    chatStorage.save(entity);
+    log.debug("Chat \"{}\" ({}) saved/updated", update.chat.title, update.chat.id);
   }
 
   @EventListener
@@ -31,12 +37,13 @@ public class ChatHandler {
     if (update == null || update.getConstructor() != TdApi.UpdateChatAddedToList.CONSTRUCTOR) {
       return;
     }
-    switch (update.chatList.getConstructor()) {
-      case TdApi.ChatListMain.CONSTRUCTOR -> handleAddedToChatMainList(update);
-      case TdApi.ChatListArchive.CONSTRUCTOR -> handleAddedToChatArchiveList(update);
-      case TdApi.ChatListFolder.CONSTRUCTOR -> handleAddedToChatFolderList(update);
-      default -> log.warn("Not implemented chat added to list: {}", update.chatList.getConstructor());
+
+    if (update.chatList.getConstructor() != TdApi.ChatListFolder.CONSTRUCTOR) {
+      return;
     }
+
+    TdApi.ChatListFolder folder = (TdApi.ChatListFolder) update.chatList;
+    log.warn("Implement!!! Chat {} added to folder list {}", update.chatId, folder.chatFolderId);
   }
 
   @EventListener
@@ -132,6 +139,21 @@ public class ChatHandler {
 
   @EventListener
   public void onUpdateHavePendingNotificationsEvent(UpdateHavePendingNotificationsEvent event) {
+    // ignore for now
+  }
+
+  @EventListener
+  public void onUpdateChatAvailableReactionsEvent(UpdateChatAvailableReactionsEvent event) {
+    // ignore for now
+  }
+
+  @EventListener
+  public void onUpdateChatIsTranslatableEvent(UpdateChatIsTranslatableEvent event) {
+    // ignore for now
+  }
+
+  @EventListener
+  public void onUpdateChatMessageSenderEvent(UpdateChatMessageSenderEvent event) {
     // ignore for now
   }
 

@@ -22,4 +22,13 @@ public class BasicGroupHandler {
     }
     storage.putBasicGroup(basicGroup.basicGroup);
   }
+
+  @EventListener
+  public void onUpdateBasicGroupFullInfoEvent(UpdateBasicGroupFullInfoEvent event) {
+    TdApi.UpdateBasicGroupFullInfo update = event.getUpdate();
+    if (update == null || update.getConstructor() != TdApi.UpdateBasicGroupFullInfo.CONSTRUCTOR) {
+      return;
+    }
+    // TODO: Implement
+  }
 }
