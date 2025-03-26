@@ -1,7 +1,6 @@
 package live.yurii.tgaiclient.chats;
 
 import live.yurii.tgaiclient.common.InMemoryStorage;
-import live.yurii.tgaiclient.folders.FolderEntity;
 import live.yurii.tgaiclient.folders.FolderStorage;
 import live.yurii.tgaiclient.messages.UpdateUnreadMessageCountEvent;
 import lombok.RequiredArgsConstructor;
@@ -9,6 +8,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.drinkless.tdlib.TdApi;
 import org.springframework.context.event.EventListener;
 import org.springframework.stereotype.Component;
+import org.springframework.transaction.annotation.Transactional;
 
 @Slf4j
 @Component
@@ -20,6 +20,7 @@ public class ChatHandler {
   private final ChatMapper chatMapper;
   private final FolderStorage folderStorage;
 
+  @Transactional
   @EventListener
   public void onUpdateNewChatEvent(UpdateNewChatEvent event) {
     TdApi.UpdateNewChat update = event.getUpdate();
@@ -31,6 +32,7 @@ public class ChatHandler {
     log.debug("Chat \"{}\" ({}) saved/updated", update.chat.title, update.chat.id);
   }
 
+  @Transactional
   @EventListener
   public void onUpdateChatAddedToListEvent(UpdateChatAddedToListEvent event) {
     TdApi.UpdateChatAddedToList update = event.getUpdate();
@@ -43,7 +45,13 @@ public class ChatHandler {
     }
 
     TdApi.ChatListFolder folder = (TdApi.ChatListFolder) update.chatList;
-    log.warn("Implement!!! Chat {} added to folder list {}", update.chatId, folder.chatFolderId);
+    folderStorage.findFolder(folder.chatFolderId)
+        .ifPresent(folderEntity -> chatStorage.findChat(update.chatId)
+            .ifPresent(chatEntity -> {
+              folderEntity.putChat(chatEntity);
+              folderStorage.save(folderEntity);
+              log.debug("Chat {} added to folder list {}", chatEntity.getTitle(), folderEntity.getName());
+            }));
   }
 
   @EventListener

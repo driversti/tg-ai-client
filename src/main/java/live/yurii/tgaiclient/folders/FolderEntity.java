@@ -16,6 +16,7 @@ import lombok.Setter;
 import lombok.ToString;
 import org.hibernate.proxy.HibernateProxy;
 
+import javax.validation.constraints.NotNull;
 import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
@@ -47,6 +48,14 @@ public class FolderEntity {
 
   public List<ChatEntity> getChats() {
     return chats == null ? Collections.emptyList() : Collections.unmodifiableList(chats);
+  }
+
+  public void putChat(@NotNull ChatEntity chat) {
+    Objects.requireNonNull(chat, "Chat cannot be null");
+    if (chats == null) {
+      chats = Collections.emptyList();
+    }
+    chats.add(chat);
   }
 
   @Override
