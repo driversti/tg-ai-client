@@ -12,13 +12,13 @@ import java.util.List;
 @Slf4j
 @RequiredArgsConstructor
 @RestController
-@RequestMapping(value = "/folders", consumes = "application/json", produces = "application/json")
+@RequestMapping(value = "/folders", produces = "application/json")
 public class FoldersController {
 
   private final FoldersRestService service;
 
   @GetMapping("/all")
-  public ResponseEntity<List<FolderDTO>> getAllFolders() {
+  public ResponseEntity<List<ListFoldersDTO>> listFolders() {
     log.debug("Fetching all folders");
     return ResponseEntity.ok(service.findAll());
   }

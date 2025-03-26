@@ -18,7 +18,7 @@ public class FolderMapper {
         .build();
   }
 
-  public FolderDTO toDTO(FolderEntity entity) {
-    return FolderDTO.builder().id(entity.getId()).name(entity.getName()).build();
+  public ListFoldersDTO toListFoldersDTO(FolderEntity entity) {
+    return ListFoldersDTO.builder().id(entity.getId()).name(entity.getName()).build();
   }
 }

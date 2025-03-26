@@ -14,9 +14,9 @@ public class FoldersRestService {
   private final FolderStorage storage;
   private final FolderMapper mapper;
 
-  public List<FolderDTO> findAll() {
+  public List<ListFoldersDTO> findAll() {
     return storage.findAll().stream()
-        .map(mapper::toDTO)
+        .map(mapper::toListFoldersDTO)
         .toList();
   }
 }
