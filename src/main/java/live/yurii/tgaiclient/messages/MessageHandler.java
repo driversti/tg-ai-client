@@ -62,6 +62,7 @@ public class MessageHandler {
     senderStorage.findById(senderId)
         .ifPresentOrElse(existingSender -> {
           MessageEntity messageEntity = messageMapper.toEntity(update.message, existingSender);
+          log.debug("Saved message from: {}", existingSender.identifiableName());
           // TODO: add embeddings
           messageStorage.save(messageEntity);
         }, () -> {
