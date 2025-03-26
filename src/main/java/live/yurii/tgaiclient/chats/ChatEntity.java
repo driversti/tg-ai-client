@@ -99,6 +99,11 @@ public class ChatEntity extends SenderEntity {
     return this instanceof HibernateProxy ? ((HibernateProxy) this).getHibernateLazyInitializer().getPersistentClass().hashCode() : getClass().hashCode();
   }
 
+  @Override
+  public String identifiableName() {
+    return title;
+  }
+
   @Getter
   @AllArgsConstructor
   public enum ChatType {
