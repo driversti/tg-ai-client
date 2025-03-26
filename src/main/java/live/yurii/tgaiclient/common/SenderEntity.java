@@ -31,6 +31,8 @@ public abstract class SenderEntity {
   @Column(name = "sender_type", nullable = false, updatable = false)
   protected SenderType senderType;
 
+  public abstract String identifiableName();
+
   public enum SenderType {
     USER, CHAT
   }

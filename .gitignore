@@ -34,7 +34,7 @@ build/
 
 ### Custom ###
 **/*.log
-**/*.jar
+!libs/*.jar
 **/*.env
 **/*.gz
 tdlib*/

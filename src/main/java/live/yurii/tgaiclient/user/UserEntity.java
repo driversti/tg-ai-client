@@ -129,6 +129,7 @@ public class UserEntity extends SenderEntity implements JsonEscapable {
     return this;
   }
 
+  @Override
   public String identifiableName() {
     String fn = isNullOrEmpty(firstName) ? "" : firstName.trim();
     String ln = isNullOrEmpty(lastName) ? "" : lastName.trim();
