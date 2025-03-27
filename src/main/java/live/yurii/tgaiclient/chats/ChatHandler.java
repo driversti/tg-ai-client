@@ -10,6 +10,8 @@ import org.springframework.context.event.EventListener;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.function.Consumer;
+
 @Slf4j
 @Component
 @RequiredArgsConstructor
@@ -27,13 +29,23 @@ public class ChatHandler {
     if (update == null || update.getConstructor() != TdApi.UpdateNewChat.CONSTRUCTOR) {
       return;
     }
-    ChatEntity entity = chatMapper.toEntity(update.chat);
-    chatStorage.save(entity);
-    log.debug("Chat \"{}\" ({}) saved/updated", update.chat.title, update.chat.id);
+    TdApi.Chat chat = update.chat;
+//    chatStorage.findChat(chat.id)
+//        .ifPresentOrElse(entity -> {
+//              log.debug("Updating existing chat {}", chat.id);
+//              chatMapper.updateEntity(entity, chat);
+//              chatStorage.save(entity);
+//            },
+//            () -> {
+//              log.debug("Saving a new chat {}", chat.id);
+//              chatStorage.save(chatMapper.toEntity(chat));
+//            }
+//        );
+    log.debug("onUpdateNewChatEvent: {}", chat);
   }
 
-  @Transactional
-  @EventListener
+//  @Transactional
+//  @EventListener
   public void onUpdateChatAddedToListEvent(UpdateChatAddedToListEvent event) {
     TdApi.UpdateChatAddedToList update = event.getUpdate();
     if (update == null || update.getConstructor() != TdApi.UpdateChatAddedToList.CONSTRUCTOR) {
@@ -45,13 +57,14 @@ public class ChatHandler {
     }
 
     TdApi.ChatListFolder folder = (TdApi.ChatListFolder) update.chatList;
-    folderStorage.findFolder(folder.chatFolderId)
-        .ifPresent(folderEntity -> chatStorage.findChat(update.chatId)
-            .ifPresent(chatEntity -> {
-              folderEntity.putChat(chatEntity);
-              folderStorage.save(folderEntity);
-              log.debug("Chat {} added to folder list {}", chatEntity.getTitle(), folderEntity.getName());
-            }));
+//    folderStorage.findFolder(folder.chatFolderId)
+//        .ifPresentOrElse(folderEntity -> chatStorage.findChat(update.chatId)
+//                .ifPresentOrElse(chatEntity -> {
+//                  folderEntity.putChat(chatEntity);
+//                  folderStorage.save(folderEntity);
+//                  log.trace("Chat {} added to folder list {}", chatEntity.getTitle(), folderEntity.getName());
+//                }, () -> log.warn("Chat {} not found", update.chatId)),
+//            () -> log.warn("Folder {} not found", folder.chatFolderId));
   }
 
   @EventListener

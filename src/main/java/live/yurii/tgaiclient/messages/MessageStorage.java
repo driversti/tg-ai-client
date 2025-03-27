@@ -7,6 +7,7 @@ import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.Collection;
+import java.util.Optional;
 import java.util.function.Consumer;
 
 @Slf4j
@@ -23,10 +24,7 @@ public class MessageStorage {
   }
 
   private Runnable saveNewMessage(MessageEntity message) {
-    return () -> {
-      repository.save(message);
-      log.debug("Saved new message: {}", message.getId());
-    };
+    return () -> repository.save(message);
   }
 
   public Collection<MessageEntity> findAll() {
@@ -41,10 +39,18 @@ public class MessageStorage {
     repository.deleteById(id);
   }
 
+  public Optional<MessageEntity> findBySender(long chatId) {
+    return repository.findBySender_Id(chatId);
+  }
+
+  public Optional<MessageEntity> findById(long messageId) {
+    return repository.findById(messageId);
+  }
+
   private static Consumer<MessageEntity> updateContent(MessageEntity message) {
     return existingMessage -> {
       existingMessage.setContentText(message.getContentText());
-      log.debug("Updated message: {}", existingMessage.getId());
+      log.trace("Updated message: {}", existingMessage.getId());
     };
   }
 }

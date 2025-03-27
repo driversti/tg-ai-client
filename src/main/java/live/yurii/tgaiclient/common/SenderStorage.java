@@ -18,7 +18,7 @@ public class SenderStorage {
   }
 
   public Optional<SenderEntity> findById(long id) {
-    log.debug("Finding sender by id: {}", id);
+    log.trace("Finding sender by id: {}", id);
     return repository.findById(id);
   }
 }

@@ -15,15 +15,19 @@ public class UserHandler {
   private final UserStorage storage;
   private final UserMapper mapper;
 
+  @Transactional
   @EventListener
   public void onUpdateUserEvent(UpdateUserEvent event) {
     TdApi.UpdateUser update = event.getUpdate();
     if (update == null || update.getConstructor() != TdApi.UpdateUser.CONSTRUCTOR) {
       return;
     }
-    UserEntity entity = mapper.toEntity(update.user);
-    storage.save(entity);
-    log.debug("Saved/updated user: {}", entity.identifiableName());
+    TdApi.User user = update.user;
+    storage.findUser(user.id)
+        .ifPresentOrElse(
+            entity -> mapper.updateEntity(entity, user),
+            () -> storage.save(mapper.toEntity(user))
+        );
   }
 
   @Transactional

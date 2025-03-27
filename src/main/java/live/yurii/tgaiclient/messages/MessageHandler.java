@@ -1,20 +1,19 @@
 package live.yurii.tgaiclient.messages;
 
+import live.yurii.tgaiclient.chats.ChatEntity;
 import live.yurii.tgaiclient.chats.ChatStorage;
 import live.yurii.tgaiclient.common.SenderStorage;
-import live.yurii.tgaiclient.common.Storage;
-import live.yurii.tgaiclient.user.UserStorage;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.drinkless.tdlib.TdApi;
 import org.springframework.context.event.EventListener;
 import org.springframework.stereotype.Component;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.Map;
 import java.util.Optional;
+import java.util.function.Consumer;
 import java.util.stream.LongStream;
-
-import static java.lang.String.format;
 
 @Slf4j
 @Component
@@ -23,9 +22,7 @@ public class MessageHandler {
 
   private final MessageBuffer messageBuffer = new MessageBuffer(10000);
 
-  private final Storage storage;
   private final SenderStorage senderStorage;
-  private final UserStorage userStorage;
   private final ChatStorage chatStorage;
   private final MessageStorage messageStorage;
   private final MessageMapper messageMapper;
@@ -40,11 +37,7 @@ public class MessageHandler {
     if (update.fromCache) {
       return;
     }
-    messageBuffer.findAll(LongStream.of(update.messageIds).boxed().toList())
-        .forEach(bm -> {
-          log.info("Message deleted from \"{}\"(from cache: {}): {}", bm.getChatTitle(), update.fromCache, bm.getContent());
-          messageBuffer.removeMessage(bm.getId());
-        });
+    // TODO: implement
   }
 
   @EventListener
@@ -62,7 +55,7 @@ public class MessageHandler {
     senderStorage.findById(senderId)
         .ifPresentOrElse(existingSender -> {
           MessageEntity messageEntity = messageMapper.toEntity(update.message, existingSender);
-          log.debug("Saved message from: {}", existingSender.identifiableName());
+          log.trace("Saved message from: {}", existingSender.identifiableName());
           // TODO: add embeddings
           messageStorage.save(messageEntity);
         }, () -> {
@@ -84,6 +77,7 @@ public class MessageHandler {
         update.messageId, update.chatId, info.viewCount, reactionsLength);
   }
 
+  @Transactional
   @EventListener
   public void onUpdateMessageContentEvent(UpdateMessageContentEvent event) {
     TdApi.UpdateMessageContent update = event.getUpdate();
@@ -93,12 +87,18 @@ public class MessageHandler {
     if (ignoredChats.containsKey(update.chatId)) {
       return;
     }
-    String title = storage.findChat(update.chatId).map(c -> c.title).orElse("");
-    log.info("Message {} content updated in chat {} ({}). New content: {}",
-        update.messageId, title, update.chatId, messageMapper.getContent(update.newContent));
+    messageStorage.findById(update.messageId)
+        .ifPresentOrElse(entity -> {
+          String content = messageMapper.getContent(update.newContent);
+          entity.setContentText(content);
+          messageStorage.save(entity);
+          log.debug("Message {} content updated in chat {}. New content:\n{}",
+              update.messageId, entity.getSender().identifiableName(), content);
+        }, () -> log.warn("Message {} content updated in chat {} but message not found in storage",
+            update.messageId, update.chatId));
   }
 
-  @EventListener
+//  @EventListener
   public void onUpdateMessageEditedEvent(UpdateMessageEditedEvent event) {
     TdApi.UpdateMessageEdited update = event.getUpdate();
     if (update == null || update.getConstructor() != TdApi.UpdateMessageEdited.CONSTRUCTOR) {
@@ -109,23 +109,8 @@ public class MessageHandler {
     }
     // I'm not sure if it is useful. When a message is edited, we receive an UpdateMessageContent event.
     // Why does this event exist?
-    String title = storage.findChat(update.chatId).map(c -> c.title).orElse("");
+    String title = chatStorage.findChat(update.chatId).map(ChatEntity::getTitle).orElse("");
     log.info("Message {} edited in chat {} ({})", update.messageId, title, update.chatId);
-  }
-
-  private String getFrom(TdApi.Message message) {
-    return switch (message.senderId.getConstructor()) {
-      case TdApi.MessageSenderUser.CONSTRUCTOR ->
-          format("user %s", userStorage.findUser(((TdApi.MessageSenderUser) message.senderId).userId)
-              .map(u -> format("%s (%s, %s %s)", u.getUsername(), u.getId(), u.getFirstName(), u.getLastName()))
-              .orElse("🤷‍♂️"));
-      case TdApi.MessageSenderChat.CONSTRUCTOR -> {
-        long chatId = ((TdApi.MessageSenderChat) message.senderId).chatId;
-        String title = storage.findChat(chatId).map(chat -> chat.title).orElse("");
-        yield format("chat %s %s", title, chatId);
-      }
-      default -> "Unknown sender";
-    };
   }
 
   private long resolveSenderId(TdApi.MessageSender messageSender) {

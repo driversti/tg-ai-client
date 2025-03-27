@@ -33,6 +33,7 @@ build/
 .vscode/
 
 ### Custom ###
+**/*.tmp
 **/*.log
 !libs/*.jar
 **/*.env

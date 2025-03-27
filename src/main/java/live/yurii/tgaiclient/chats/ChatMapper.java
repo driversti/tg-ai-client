@@ -1,6 +1,5 @@
 package live.yurii.tgaiclient.chats;
 
-import live.yurii.tgaiclient.common.SenderEntity;
 import lombok.extern.slf4j.Slf4j;
 import org.drinkless.tdlib.TdApi;
 import org.springframework.stereotype.Component;
@@ -40,5 +39,12 @@ public class ChatMapper {
       case TdApi.ChatTypePrivate.CONSTRUCTOR -> ChatEntity.ChatType.PRIVATE;
       default -> ChatEntity.ChatType.BASIC_GROUP;
     };
+  }
+
+  public void updateEntity(ChatEntity entity, TdApi.Chat chat) {
+    entity.setTitle(chat.title);
+    entity.lastReadInboxMessageId(chat.lastReadInboxMessageId);
+    entity.lastReadOutboxMessageId(chat.lastReadOutboxMessageId);
+    entity.messageAutoDeleteTime(chat.messageAutoDeleteTime);
   }
 }

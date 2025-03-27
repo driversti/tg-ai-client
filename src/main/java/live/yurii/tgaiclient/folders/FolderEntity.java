@@ -55,6 +55,9 @@ public class FolderEntity {
     if (chats == null) {
       chats = Collections.emptyList();
     }
+    if (chats.contains(chat)) {
+      return;
+    }
     chats.add(chat);
   }
 

@@ -26,4 +26,10 @@ public class ChatStorage {
   public Optional<ChatEntity> findChat(long chatId) {
     return repository.findById(chatId);
   }
+
+  public Iterable<ChatEntity> getChatsByFolderId(long folderId) {
+    List<ChatEntity> all = repository.findAllByInFolders_Id(folderId);
+    log.info("Found {} chats for folder {}", all.size(), folderId);
+    return all;
+  }
 }

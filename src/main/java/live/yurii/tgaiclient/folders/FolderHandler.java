@@ -74,6 +74,6 @@ public class FolderHandler {
 //    entity.setChats(chatsInFolder);
 //    folderStorage.save(entity);
 //    log.info("Added new chat folder {} containing {} chats", entity.getName(), chatsInFolder.size());
-    log.debug("Added new chat folder\n{}", folder.folder.name.text.text);
+    log.debug("NOT IMPLEMENTED! Added new chat folder\n{}", folder.folder.name.text.text);
   }
 }

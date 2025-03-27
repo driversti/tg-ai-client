@@ -17,7 +17,7 @@ public class FolderStorage {
   private final FolderJpaRepository repository;
 
   public void save(FolderEntity folder) {
-    log.debug("Saving folder: {}", folder);
+    log.trace("Saving folder: {}", folder.getName());
     repository.save(folder);
   }
 

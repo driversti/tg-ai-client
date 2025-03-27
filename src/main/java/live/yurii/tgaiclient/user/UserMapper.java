@@ -6,6 +6,8 @@ import org.springframework.stereotype.Component;
 
 import java.util.Optional;
 
+import static org.apache.logging.log4j.util.Strings.isBlank;
+
 @Slf4j
 @Component
 public class UserMapper {
@@ -30,7 +32,7 @@ public class UserMapper {
 
   public UserEntity toEntity(TdApi.User user) {
     return UserEntity.create(user.id)
-        .username(Optional.ofNullable(user.usernames).map(u -> u.activeUsernames).map(u -> u[0]).orElse(null))
+        .username(getUsername(user))
         .firstName(user.firstName)
         .lastName(user.lastName)
         .phoneNumber(user.phoneNumber)
@@ -41,6 +43,13 @@ public class UserMapper {
         .restrictionReason(user.restrictionReason)
         .languageCode(user.languageCode)
         .userType(resolveUserType(user.type));
+  }
+
+  private static String getUsername(TdApi.User user) {
+    return Optional.ofNullable(user.usernames)
+        .map(u -> u.activeUsernames)
+        .map(u -> u[0])
+        .orElse(null);
   }
 
   private UserEntity.UserType resolveUserType(TdApi.UserType type) {
@@ -58,5 +67,28 @@ public class UserMapper {
 
   public void updateEntity(UserEntity user, TdApi.UserFullInfo fullInfo) {
     // TODO: map bio, birthdate
+  }
+
+  public void updateEntity(UserEntity entity, TdApi.User user) {
+    String username = getUsername(user);
+    if (!isBlank(username)) {
+      entity.setUsername(username);
+    }
+    if (!isBlank(user.firstName)) {
+      entity.setFirstName(user.firstName);
+    }
+    if (!isBlank(user.lastName)) {
+      entity.setLastName(user.lastName);
+    }
+    if (!isBlank(user.phoneNumber)) {
+      entity.setPhoneNumber(user.phoneNumber);
+    }
+    entity.setContact(user.isContact);
+    entity.setMutualContact(user.isMutualContact);
+    entity.setPremium(user.isPremium);
+    entity.setCloseFriend(user.isCloseFriend);
+    entity.setRestrictionReason(user.restrictionReason);
+    entity.setLanguageCode(user.languageCode);
+    entity.setUserType(resolveUserType(user.type));
   }
 }

@@ -49,6 +49,8 @@ public class ChatEntity extends SenderEntity {
   @Column(name = "message_auto_delete_time")
   private Integer messageAutoDeleteTime;
 
+  // TODO: add 'int unreadCount' field
+
   public ChatEntity(Long id, String title) {
     super(id, SenderType.CHAT);
     this.title = title;
