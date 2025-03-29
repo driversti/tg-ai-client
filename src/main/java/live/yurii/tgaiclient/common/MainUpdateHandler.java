@@ -1,6 +1,7 @@
 package live.yurii.tgaiclient.common;
 
 import live.yurii.tgaiclient.authorization.UpdateAuthorizationStateEvent;
+import live.yurii.tgaiclient.chats.UpdateNewChatEvent;
 import live.yurii.tgaiclient.system.UpdateConnectionStateEvent;
 import live.yurii.tgaiclient.system.UpdateOptionEvent;
 import live.yurii.tgaiclient.user.UpdateUserEvent;
@@ -62,9 +63,11 @@ public class MainUpdateHandler implements Client.ResultHandler {
 
       // chats
       case TdApi.UpdateUnreadMessageCount.CONSTRUCTOR -> skip("UpdateUnreadMessageCount");
-      case TdApi.UpdateNewChat.CONSTRUCTOR -> skip("UpdateNewChat");
+      case TdApi.UpdateNewChat.CONSTRUCTOR ->
+          publisher.publishEvent(new UpdateNewChatEvent(this, (TdApi.UpdateNewChat) object));
       case TdApi.UpdateChatReadInbox.CONSTRUCTOR -> skip("UpdateChatReadInbox");
       case TdApi.UpdateUnreadChatCount.CONSTRUCTOR -> skip("UpdateUnreadChatCount");
+      case TdApi.UpdateChatAction.CONSTRUCTOR -> skip("UpdateChatAction");
 
       // folders
 
@@ -72,11 +75,18 @@ public class MainUpdateHandler implements Client.ResultHandler {
 
       // supergroups
       case TdApi.UpdateSupergroup.CONSTRUCTOR -> skip("UpdateSupergroup");
+      case TdApi.UpdateSupergroupFullInfo.CONSTRUCTOR -> skip("UpdateSupergroupFullInfo");
 
       // messages
+      case TdApi.UpdateNewMessage.CONSTRUCTOR -> skip("UpdateNewMessage");
+      case TdApi.UpdateMessageContent.CONSTRUCTOR -> skip("UpdateMessageContent");
+      case TdApi.UpdateMessageEdited.CONSTRUCTOR -> skip("UpdateMessageEdited");
       case TdApi.UpdateChatLastMessage.CONSTRUCTOR -> skip("UpdateChatLastMessage");
       case TdApi.UpdateDeleteMessages.CONSTRUCTOR -> skip("UpdateDeleteMessages");
       case TdApi.UpdateMessageInteractionInfo.CONSTRUCTOR -> skip("UpdateMessageInteractionInfo");
+
+      // notifications
+      case TdApi.UpdateHavePendingNotifications.CONSTRUCTOR -> skip("UpdateHavePendingNotifications");
 
       // default case for unhandled updates
       default -> log.warn("Not implemented update: {} {}", object.getClass().getName(), toJson(object));

@@ -19,7 +19,6 @@ import java.util.stream.Stream;
 
 import static java.lang.String.format;
 import static java.util.function.Predicate.not;
-import static org.apache.logging.log4j.util.Strings.isBlank;
 
 @Getter
 @Setter
@@ -67,8 +66,8 @@ public class UserEntity {
   private String languageCode;
 
   @Enumerated(EnumType.STRING)
-  @Column(name = "user_type", nullable = false)
   @JdbcTypeCode(SqlTypes.VARCHAR)
+  @Column(name = "user_type", nullable = false)
   private UserType userType;
 
   public UserEntity(Long id) {
@@ -153,8 +152,9 @@ public class UserEntity {
 
   public String identifiableName() {
     if (username != null) {
-      return format("@%s ", username) +
-          Stream.of(format("%s %s", firstName, lastName), String.valueOf(id), phoneNumber)
+      String fullName = Stream.of(firstName, lastName).filter(not(Strings::isBlank)).collect(Collectors.joining(" "));
+      return format("https://t.me/%s ", username) +
+          Stream.of(fullName, String.valueOf(id), phoneNumber)
               .filter(not(Strings::isBlank))
               .collect(Collectors.joining(", ", "(", ")"));
 
