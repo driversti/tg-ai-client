@@ -3,6 +3,7 @@ package live.yurii.tgaiclient.common;
 import live.yurii.tgaiclient.authorization.UpdateAuthorizationStateEvent;
 import live.yurii.tgaiclient.system.UpdateConnectionStateEvent;
 import live.yurii.tgaiclient.system.UpdateOptionEvent;
+import live.yurii.tgaiclient.user.UpdateUserEvent;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.drinkless.tdlib.Client;
@@ -56,11 +57,14 @@ public class MainUpdateHandler implements Client.ResultHandler {
 
       // users
       case TdApi.UpdateUserStatus.CONSTRUCTOR -> skip("UpdateUserStatus");
-      case TdApi.UpdateUser.CONSTRUCTOR -> skip("UpdateUser");
+      case TdApi.UpdateUser.CONSTRUCTOR -> publisher.publishEvent(new UpdateUserEvent(this, (TdApi.UpdateUser) object));
+      case TdApi.UpdateChatAddedToList.CONSTRUCTOR -> skip("UpdateChatAddedToList");
 
       // chats
       case TdApi.UpdateUnreadMessageCount.CONSTRUCTOR -> skip("UpdateUnreadMessageCount");
       case TdApi.UpdateNewChat.CONSTRUCTOR -> skip("UpdateNewChat");
+      case TdApi.UpdateChatReadInbox.CONSTRUCTOR -> skip("UpdateChatReadInbox");
+      case TdApi.UpdateUnreadChatCount.CONSTRUCTOR -> skip("UpdateUnreadChatCount");
 
       // folders
 
@@ -72,6 +76,7 @@ public class MainUpdateHandler implements Client.ResultHandler {
       // messages
       case TdApi.UpdateChatLastMessage.CONSTRUCTOR -> skip("UpdateChatLastMessage");
       case TdApi.UpdateDeleteMessages.CONSTRUCTOR -> skip("UpdateDeleteMessages");
+      case TdApi.UpdateMessageInteractionInfo.CONSTRUCTOR -> skip("UpdateMessageInteractionInfo");
 
       // default case for unhandled updates
       default -> log.warn("Not implemented update: {} {}", object.getClass().getName(), toJson(object));
