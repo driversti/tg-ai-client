@@ -12,8 +12,12 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 import org.apache.logging.log4j.util.Strings;
 import org.hibernate.annotations.JdbcTypeCode;
+import org.hibernate.envers.AuditTable;
+import org.hibernate.envers.Audited;
+import org.hibernate.envers.NotAudited;
 import org.hibernate.type.SqlTypes;
 
+import java.util.Objects;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -23,6 +27,8 @@ import static java.util.function.Predicate.not;
 @Getter
 @Setter
 @NoArgsConstructor(access = lombok.AccessLevel.PROTECTED)
+@Audited
+@AuditTable(value = "user_history")
 @Entity
 @Table(name = "users")
 public class UserEntity {
@@ -62,6 +68,7 @@ public class UserEntity {
   @Column(name = "restriction_reason")
   private String restrictionReason;
 
+  @NotAudited
   @Column(name = "language_code", length = 5)
   private String languageCode;
 
@@ -159,9 +166,32 @@ public class UserEntity {
               .collect(Collectors.joining(", ", "(", ")"));
 
     }
-    return format("%s %s", firstName, lastName) + Stream.of(String.valueOf(id), phoneNumber)
+    return format("%s %s", firstName, lastName) + " " + Stream.of(String.valueOf(id), phoneNumber)
         .filter(not(Strings::isBlank))
         .collect(Collectors.joining(", ", "(", ")"));
+  }
+
+  @Override
+  public boolean equals(Object o) {
+    if (!(o instanceof UserEntity that)) return false;
+    return Objects.equals(getId(), that.getId())
+        && Objects.equals(getUsername(), that.getUsername())
+        && Objects.equals(getFirstName(), that.getFirstName())
+        && Objects.equals(getLastName(), that.getLastName())
+        && Objects.equals(getPhoneNumber(), that.getPhoneNumber())
+        && Objects.equals(getContact(), that.getContact())
+        && Objects.equals(getMutualContact(), that.getMutualContact())
+        && Objects.equals(getPremium(), that.getPremium())
+        && Objects.equals(getCloseFriend(), that.getCloseFriend())
+        && Objects.equals(getRestrictionReason(), that.getRestrictionReason())
+        && Objects.equals(getLanguageCode(), that.getLanguageCode())
+        && getUserType() == that.getUserType();
+  }
+
+  @Override
+  public int hashCode() {
+    return Objects.hash(getId(), getUsername(), getFirstName(), getLastName(), getPhoneNumber(), getContact(),
+        getMutualContact(), getPremium(), getCloseFriend(), getRestrictionReason(), getLanguageCode(), getUserType());
   }
 
   public enum UserType {

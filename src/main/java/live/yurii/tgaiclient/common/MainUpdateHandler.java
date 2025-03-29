@@ -2,6 +2,9 @@ package live.yurii.tgaiclient.common;
 
 import live.yurii.tgaiclient.authorization.UpdateAuthorizationStateEvent;
 import live.yurii.tgaiclient.chats.UpdateNewChatEvent;
+import live.yurii.tgaiclient.messages.UpdateMessageContentEvent;
+import live.yurii.tgaiclient.messages.UpdateMessageEditedEvent;
+import live.yurii.tgaiclient.messages.UpdateNewMessageEvent;
 import live.yurii.tgaiclient.system.UpdateConnectionStateEvent;
 import live.yurii.tgaiclient.system.UpdateOptionEvent;
 import live.yurii.tgaiclient.user.UpdateUserEvent;
@@ -55,6 +58,9 @@ public class MainUpdateHandler implements Client.ResultHandler {
           publisher.publishEvent(new UpdateOptionEvent(this, (TdApi.UpdateOption) object));
       case TdApi.UpdateConnectionState.CONSTRUCTOR ->
           publisher.publishEvent(new UpdateConnectionStateEvent(this, (TdApi.UpdateConnectionState) object));
+      case TdApi.UpdateDefaultBackground.CONSTRUCTOR -> skip("UpdateDefaultBackground");
+      case TdApi.UpdateDiceEmojis.CONSTRUCTOR -> skip("UpdateDiceEmojis");
+      case TdApi.UpdateActiveEmojiReactions.CONSTRUCTOR -> skip("UpdateActiveEmojiReactions");
 
       // users
       case TdApi.UpdateUserStatus.CONSTRUCTOR -> skip("UpdateUserStatus");
@@ -68,6 +74,8 @@ public class MainUpdateHandler implements Client.ResultHandler {
       case TdApi.UpdateChatReadInbox.CONSTRUCTOR -> skip("UpdateChatReadInbox");
       case TdApi.UpdateUnreadChatCount.CONSTRUCTOR -> skip("UpdateUnreadChatCount");
       case TdApi.UpdateChatAction.CONSTRUCTOR -> skip("UpdateChatAction");
+      case TdApi.UpdateChatAvailableReactions.CONSTRUCTOR -> skip("UpdateChatAvailableReactions");
+      case TdApi.UpdateChatIsTranslatable.CONSTRUCTOR -> skip("UpdateChatIsTranslatable");
 
       // folders
 
@@ -78,15 +86,20 @@ public class MainUpdateHandler implements Client.ResultHandler {
       case TdApi.UpdateSupergroupFullInfo.CONSTRUCTOR -> skip("UpdateSupergroupFullInfo");
 
       // messages
-      case TdApi.UpdateNewMessage.CONSTRUCTOR -> skip("UpdateNewMessage");
-      case TdApi.UpdateMessageContent.CONSTRUCTOR -> skip("UpdateMessageContent");
-      case TdApi.UpdateMessageEdited.CONSTRUCTOR -> skip("UpdateMessageEdited");
+      case TdApi.UpdateNewMessage.CONSTRUCTOR ->
+          publisher.publishEvent(new UpdateNewMessageEvent(this, (TdApi.UpdateNewMessage) object));
+      case TdApi.UpdateMessageContent.CONSTRUCTOR ->
+          publisher.publishEvent(new UpdateMessageContentEvent(this, (TdApi.UpdateMessageContent) object));
+      case TdApi.UpdateMessageEdited.CONSTRUCTOR ->
+          publisher.publishEvent(new UpdateMessageEditedEvent(this, (TdApi.UpdateMessageEdited) object));
       case TdApi.UpdateChatLastMessage.CONSTRUCTOR -> skip("UpdateChatLastMessage");
       case TdApi.UpdateDeleteMessages.CONSTRUCTOR -> skip("UpdateDeleteMessages");
       case TdApi.UpdateMessageInteractionInfo.CONSTRUCTOR -> skip("UpdateMessageInteractionInfo");
+      case TdApi.UpdateMessageIsPinned.CONSTRUCTOR -> skip("UpdateMessageIsPinned");
 
       // notifications
       case TdApi.UpdateHavePendingNotifications.CONSTRUCTOR -> skip("UpdateHavePendingNotifications");
+      case TdApi.UpdateChatNotificationSettings.CONSTRUCTOR -> skip("UpdateChatNotificationSettings");
 
       // default case for unhandled updates
       default -> log.warn("Not implemented update: {} {}", object.getClass().getName(), toJson(object));
