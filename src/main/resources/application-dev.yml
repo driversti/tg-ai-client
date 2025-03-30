@@ -8,5 +8,4 @@ spring:
 
 logging:
   file:
-    name: tg-ai-client-dev.log
-    path: logs
+    name: logs/tg-ai-client-dev.log
