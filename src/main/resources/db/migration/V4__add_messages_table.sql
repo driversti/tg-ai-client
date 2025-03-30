@@ -1,8 +1,9 @@
---- Create table 'chats'
+--- Create table 'messages'
 CREATE TABLE IF NOT EXISTS messages
 (
   id               BIGINT    NOT NULL,
   sender_id        BIGINT    NOT NULL,
+  chat_id          BIGINT    NOT NULL,
   date             TIMESTAMP NOT NULL,
   edit_date        TIMESTAMP,
   text             TEXT,
@@ -13,3 +14,6 @@ CREATE TABLE IF NOT EXISTS messages
   PRIMARY KEY (id)
 );
 
+CREATE INDEX IF NOT EXISTS idx_messages_sender_id ON messages (sender_id);
+CREATE INDEX IF NOT EXISTS idx_messages_chat_id ON messages (chat_id);
+CREATE INDEX IF NOT EXISTS idx_messages_date ON messages (date);

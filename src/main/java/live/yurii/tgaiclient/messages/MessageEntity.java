@@ -33,6 +33,10 @@ public class MessageEntity {
   private Long senderId;
 
   @NotAudited
+  @Column(name = "chat_id")
+  private Long chatId;
+
+  @NotAudited
   @Column(name = "is_channel_post")
   private Boolean isChannelPost;
 
@@ -55,13 +59,14 @@ public class MessageEntity {
   @Column(name = "text")
   private String text;
 
-  public MessageEntity(Long id, Long senderId) {
+  public MessageEntity(Long id, Long senderId, Long chatId) {
     this.id = id;
     this.senderId = senderId;
+    this.chatId = chatId;
   }
 
-  public static MessageEntity create(Long id, Long senderId) {
-    return new MessageEntity(id, senderId);
+  public static MessageEntity create(Long id, Long senderId, Long chatId) {
+    return new MessageEntity(id, senderId, chatId);
   }
 
   public MessageEntity isChannelPost(Boolean isChannelPost) {
@@ -109,6 +114,7 @@ public class MessageEntity {
     if (!(o instanceof MessageEntity that)) return false;
     return Objects.equals(getId(), that.getId())
         && Objects.equals(getSenderId(), that.getSenderId())
+        && Objects.equals(getChatId(), that.getChatId())
         && Objects.equals(getIsChannelPost(), that.getIsChannelPost())
         && Objects.equals(getIsTopicMessage(), that.getIsTopicMessage())
         && Objects.equals(getDate(), that.getDate())
@@ -119,7 +125,7 @@ public class MessageEntity {
 
   @Override
   public int hashCode() {
-    return Objects.hash(getId(), getSenderId(), getIsChannelPost(), getIsTopicMessage(), getDate(), getEditDate(),
-        getViaBotId(), getText());
+    return Objects.hash(getId(), getSenderId(), getChatId(), getIsChannelPost(), getIsTopicMessage(), getDate(),
+        getEditDate(), getViaBotId(), getText());
   }
 }

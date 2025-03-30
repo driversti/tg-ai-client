@@ -76,6 +76,7 @@ public class MainUpdateHandler implements Client.ResultHandler {
       case TdApi.UpdateChatAction.CONSTRUCTOR -> skip("UpdateChatAction");
       case TdApi.UpdateChatAvailableReactions.CONSTRUCTOR -> skip("UpdateChatAvailableReactions");
       case TdApi.UpdateChatIsTranslatable.CONSTRUCTOR -> skip("UpdateChatIsTranslatable");
+      case TdApi.UpdateChatPosition.CONSTRUCTOR -> skip("UpdateChatPosition");
 
       // folders
 

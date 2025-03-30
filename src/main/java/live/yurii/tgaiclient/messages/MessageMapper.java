@@ -11,7 +11,7 @@ import org.springframework.stereotype.Component;
 public class MessageMapper {
 
   public MessageEntity toEntity(TdApi.Message message) {
-    return MessageEntity.create(message.id, getSenderId(message.senderId))
+    return MessageEntity.create(message.id, getSenderId(message.senderId), message.chatId)
         .date(message.date)
         .text(getText(message.content))
         .isChannelPost(message.isChannelPost)
@@ -37,7 +37,7 @@ public class MessageMapper {
       case TdApi.MessageText.CONSTRUCTOR -> ((TdApi.MessageText) content).text.text;
       case TdApi.MessagePhoto.CONSTRUCTOR -> ((TdApi.MessagePhoto) content).caption.text;
       case TdApi.MessageVideo.CONSTRUCTOR -> ((TdApi.MessageVideo) content).caption.text;
-      default -> "Unknown message type: " + content.getClass().getName();
+      default -> "";
     };
   }
 }

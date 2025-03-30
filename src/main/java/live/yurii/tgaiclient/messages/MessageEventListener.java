@@ -28,6 +28,7 @@ public class MessageEventListener {
     if (update == null ||
         update.getConstructor() != TdApi.UpdateNewMessage.CONSTRUCTOR ||
         ignoredChats.containsKey(messageMapper.getSenderId(update.message.senderId)) ||
+        ignoredChats.containsKey(update.message.chatId) ||
         isBlank(messageMapper.getText(update.message.content))
     ) {
       return;
@@ -42,7 +43,7 @@ public class MessageEventListener {
     TdApi.UpdateMessageContent update = event.getUpdate();
     if (update == null ||
         update.getConstructor() != TdApi.UpdateMessageContent.CONSTRUCTOR ||
-        ignoredChats.containsKey(update.messageId)
+        ignoredChats.containsKey(update.chatId)
     ) {
       return;
     }
@@ -57,7 +58,8 @@ public class MessageEventListener {
     TdApi.UpdateMessageEdited update = event.getUpdate();
     if (update == null ||
         update.getConstructor() != TdApi.UpdateMessageEdited.CONSTRUCTOR ||
-        ignoredChats.containsKey(update.messageId)
+        ignoredChats.containsKey(update.messageId) ||
+        ignoredChats.containsKey(update.chatId)
     ) {
       return;
     }
