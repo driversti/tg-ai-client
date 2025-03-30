@@ -33,6 +33,7 @@ build/
 .vscode/
 
 ### Custom ###
+**/*.tmp
 **/*.log
 !libs/*.jar
 **/*.env
@@ -40,4 +41,4 @@ build/
 tdlib*/
 src/main/resources/ignored_chats.json
 telegram-db
-
+logs

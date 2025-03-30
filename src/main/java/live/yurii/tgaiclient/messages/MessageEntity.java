@@ -3,78 +3,129 @@ package live.yurii.tgaiclient.messages;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.Id;
-import jakarta.persistence.JoinColumn;
-import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
-import live.yurii.tgaiclient.common.SenderEntity;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
+import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
-import lombok.ToString;
-import org.hibernate.proxy.HibernateProxy;
+import org.hibernate.envers.AuditTable;
+import org.hibernate.envers.Audited;
+import org.hibernate.envers.NotAudited;
 
 import java.time.Instant;
 import java.util.Objects;
 
-@Entity
-@Table(name = "messages")
+@Audited
+@AuditTable(value = "message_history")
 @Getter
 @Setter
-@Builder
-@NoArgsConstructor
-@AllArgsConstructor
+@NoArgsConstructor(access = AccessLevel.PROTECTED)
+@Entity
+@Table(name = "messages")
 public class MessageEntity {
 
   @Id
   @Column(name = "id", nullable = false, updatable = false)
   private Long id;
 
-  @ManyToOne
-  @JoinColumn(name = "sender_id", nullable = false, updatable = false)
-  private SenderEntity sender;
+  @NotAudited
+  @Column(name = "sender_id")
+  private Long senderId;
 
+  @NotAudited
+  @Column(name = "chat_id")
+  private Long chatId;
+
+  @NotAudited
   @Column(name = "is_channel_post")
   private Boolean isChannelPost;
 
+  @NotAudited
   @Column(name = "is_topic_message")
   private Boolean isTopicMessage;
 
+  @NotAudited
   @Column(name = "date")
   private Instant date;
 
+  @NotAudited
   @Column(name = "edit_date")
   private Instant editDate;
 
+  @NotAudited
   @Column(name = "via_bot_id")
   private Long viaBotId;
 
-  @Column(name = "content_text")
-  private String contentText;
+  @Column(name = "text")
+  private String text;
 
-  @ToString.Exclude
-  @Column(name = "content_embedding", columnDefinition = "vector(768)")
-  private float[] contentEmbedding;
+  public MessageEntity(Long id, Long senderId, Long chatId) {
+    this.id = id;
+    this.senderId = senderId;
+    this.chatId = chatId;
+  }
 
-  @Override
-  public final boolean equals(Object o) {
-    if (this == o) return true;
-    if (o == null) return false;
-    Class<?> oEffectiveClass = o instanceof HibernateProxy ? ((HibernateProxy) o).getHibernateLazyInitializer().getPersistentClass() : o.getClass();
-    Class<?> thisEffectiveClass = this instanceof HibernateProxy ? ((HibernateProxy) this).getHibernateLazyInitializer().getPersistentClass() : this.getClass();
-    if (thisEffectiveClass != oEffectiveClass) return false;
-    MessageEntity that = (MessageEntity) o;
-    return getId() != null && Objects.equals(getId(), that.getId());
+  public static MessageEntity create(Long id, Long senderId, Long chatId) {
+    return new MessageEntity(id, senderId, chatId);
+  }
+
+  public MessageEntity isChannelPost(Boolean isChannelPost) {
+    this.isChannelPost = isChannelPost;
+    return this;
+  }
+
+  public MessageEntity isTopicMessage(Boolean isTopicMessage) {
+    this.isTopicMessage = isTopicMessage;
+    return this;
+  }
+
+  public MessageEntity date(Instant date) {
+    this.date = date;
+    return this;
+  }
+
+  public MessageEntity date(int date) {
+    this.date = Instant.ofEpochSecond(date);
+    return this;
+  }
+
+  public MessageEntity editDate(Instant editDate) {
+    this.editDate = editDate;
+    return this;
+  }
+
+  public MessageEntity editDate(int editDate) {
+    this.editDate = Instant.ofEpochSecond(editDate);
+    return this;
+  }
+
+  public MessageEntity viaBotId(Long viaBotId) {
+    this.viaBotId = viaBotId;
+    return this;
+  }
+
+  public MessageEntity text(String text) {
+    this.text = text;
+    return this;
   }
 
   @Override
-  public final int hashCode() {
-    return this instanceof HibernateProxy ? ((HibernateProxy) this).getHibernateLazyInitializer().getPersistentClass().hashCode() : getClass().hashCode();
+  public boolean equals(Object o) {
+    if (!(o instanceof MessageEntity that)) return false;
+    return Objects.equals(getId(), that.getId())
+        && Objects.equals(getSenderId(), that.getSenderId())
+        && Objects.equals(getChatId(), that.getChatId())
+        && Objects.equals(getIsChannelPost(), that.getIsChannelPost())
+        && Objects.equals(getIsTopicMessage(), that.getIsTopicMessage())
+        && Objects.equals(getDate(), that.getDate())
+        && Objects.equals(getEditDate(), that.getEditDate())
+        && Objects.equals(getViaBotId(), that.getViaBotId())
+        && Objects.equals(getText(), that.getText());
   }
 
-  public void setContentText(String contentText) {
-    this.contentText = contentText;
-    this.contentEmbedding = null;
+  @Override
+  public int hashCode() {
+    return Objects.hash(getId(), getSenderId(), getChatId(), getIsChannelPost(), getIsTopicMessage(), getDate(),
+        getEditDate(), getViaBotId(), getText());
   }
 }

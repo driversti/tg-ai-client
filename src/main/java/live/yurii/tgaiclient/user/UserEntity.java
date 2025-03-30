@@ -4,27 +4,38 @@ import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
-import jakarta.persistence.PrimaryKeyJoinColumn;
+import jakarta.persistence.Id;
 import jakarta.persistence.Table;
-import live.yurii.tgaiclient.common.JsonEscapable;
-import live.yurii.tgaiclient.common.SenderEntity;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import org.apache.logging.log4j.util.Strings;
 import org.hibernate.annotations.JdbcTypeCode;
-import org.hibernate.proxy.HibernateProxy;
+import org.hibernate.envers.AuditTable;
+import org.hibernate.envers.Audited;
+import org.hibernate.envers.NotAudited;
 import org.hibernate.type.SqlTypes;
 
 import java.util.Objects;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
-@Entity
-@Table(name = "users")
-@PrimaryKeyJoinColumn(name = "id")
+import static java.lang.String.format;
+import static java.util.function.Predicate.not;
+
 @Getter
 @Setter
-@NoArgsConstructor(access = AccessLevel.PROTECTED)
-public class UserEntity extends SenderEntity implements JsonEscapable {
+@NoArgsConstructor(access = lombok.AccessLevel.PROTECTED)
+@Audited
+@AuditTable(value = "user_history")
+@Entity
+@Table(name = "users")
+public class UserEntity {
+
+  @Id
+  @Column(name = "id", nullable = false, updatable = false)
+  private Long id;
 
   @Column(name = "username")
   private String username;
@@ -57,16 +68,17 @@ public class UserEntity extends SenderEntity implements JsonEscapable {
   @Column(name = "restriction_reason")
   private String restrictionReason;
 
+  @NotAudited
   @Column(name = "language_code", length = 5)
   private String languageCode;
 
   @Enumerated(EnumType.STRING)
-  @Column(name = "user_type", nullable = false)
   @JdbcTypeCode(SqlTypes.VARCHAR)
+  @Column(name = "user_type", nullable = false)
   private UserType userType;
 
   public UserEntity(Long id) {
-    super(id, SenderType.USER);
+    this.id = id;
     this.userType = UserType.UNKNOWN;
   }
 
@@ -129,71 +141,6 @@ public class UserEntity extends SenderEntity implements JsonEscapable {
     return this;
   }
 
-  @Override
-  public String identifiableName() {
-    String fn = isNullOrEmpty(firstName) ? "" : firstName.trim();
-    String ln = isNullOrEmpty(lastName) ? "" : lastName.trim();
-    String u = isNullOrEmpty(username) ? "" : username.trim();
-    String pn = isNullOrEmpty(phoneNumber) ? "" : phoneNumber.trim();
-    String idStr = String.valueOf(id); // Safely convert Long to String
-
-    String coreString;
-
-    if (!fn.isEmpty() || !ln.isEmpty()) {
-      // fn ln (u, id, pn)
-      String namePart = (fn.isEmpty() ? "" : fn) + (fn.isEmpty() || ln.isEmpty() ? "" : " ") + (ln.isEmpty() ? "" : ln);
-      coreString = String.format("%s (%s, %s, %s)", namePart, u, idStr, pn);
-
-    } else if (!u.isEmpty()) {
-      // u (id, pn)
-      coreString = String.format("%s (%s, %s)", u, idStr, pn);
-    } else if (!pn.isEmpty()) {
-      // pn (id)
-      coreString = String.format("%s (%s)", pn, idStr);
-    } else {
-      // id
-      coreString = idStr;
-    }
-
-    return coreString.trim();
-  }
-
-  @Override
-  public String toString() {
-    return "{" +
-        "\"id\":" + id + "," +
-        "\"username\":" + (username == null ? "null" : "\"" + escapeJsonString(username) + "\"") + "," +
-        "\"firstName\":" + (firstName == null ? "null" : "\"" + escapeJsonString(firstName) + "\"") + "," +
-        "\"lastName\":" + (lastName == null ? "null" : "\"" + escapeJsonString(lastName) + "\"") + "," +
-        "\"phoneNumber\":" + (phoneNumber == null ? "null" : "\"" + escapeJsonString(phoneNumber) + "\"") + "," +
-        "\"isContact\":" + contact + "," +
-        "\"isMutualContact\":" + mutualContact + "," +
-        "\"isPremium\":" + premium + "," +
-        "\"isCloseFriend\":" + closeFriend + "," +
-        "\"restrictionReason\":" + (restrictionReason == null ? "null" : "\"" + escapeJsonString(restrictionReason) + "\"") + "," +
-        "\"languageCode\":" + (languageCode == null ? "null" : "\"" + escapeJsonString(languageCode) + "\"") + "," +
-        "\"userType\":" + (userType == null ? "null" : "\"" + userType + "\"") +
-        "}";
-  }
-
-  @Override
-  public final boolean equals(Object o) {
-    if (this == o) return true;
-    if (o == null) return false;
-    Class<?> oEffectiveClass = o instanceof HibernateProxy ? ((HibernateProxy) o).getHibernateLazyInitializer().getPersistentClass() : o.getClass();
-    Class<?> thisEffectiveClass = this instanceof HibernateProxy ? ((HibernateProxy) this).getHibernateLazyInitializer().getPersistentClass() : this.getClass();
-    if (thisEffectiveClass != oEffectiveClass) return false;
-    UserEntity that = (UserEntity) o;
-    return getId() != null && Objects.equals(getId(), that.getId());
-  }
-
-  @Override
-  public final int hashCode() {
-    return this instanceof HibernateProxy ?
-        ((HibernateProxy) this).getHibernateLazyInitializer().getPersistentClass().hashCode() :
-        getClass().hashCode();
-  }
-
   public Boolean isContact() {
     return contact;
   }
@@ -210,8 +157,41 @@ public class UserEntity extends SenderEntity implements JsonEscapable {
     return closeFriend;
   }
 
-  private static boolean isNullOrEmpty(String str) {
-    return str == null || str.trim().isEmpty();
+  public String identifiableName() {
+    if (username != null) {
+      String fullName = Stream.of(firstName, lastName).filter(not(Strings::isBlank)).collect(Collectors.joining(" "));
+      return format("https://t.me/%s ", username) +
+          Stream.of(fullName, String.valueOf(id), phoneNumber)
+              .filter(not(Strings::isBlank))
+              .collect(Collectors.joining(", ", "(", ")"));
+
+    }
+    return format("%s %s", firstName, lastName) + " " + Stream.of(String.valueOf(id), phoneNumber)
+        .filter(not(Strings::isBlank))
+        .collect(Collectors.joining(", ", "(", ")"));
+  }
+
+  @Override
+  public boolean equals(Object o) {
+    if (!(o instanceof UserEntity that)) return false;
+    return Objects.equals(getId(), that.getId())
+        && Objects.equals(getUsername(), that.getUsername())
+        && Objects.equals(getFirstName(), that.getFirstName())
+        && Objects.equals(getLastName(), that.getLastName())
+        && Objects.equals(getPhoneNumber(), that.getPhoneNumber())
+        && Objects.equals(getContact(), that.getContact())
+        && Objects.equals(getMutualContact(), that.getMutualContact())
+        && Objects.equals(getPremium(), that.getPremium())
+        && Objects.equals(getCloseFriend(), that.getCloseFriend())
+        && Objects.equals(getRestrictionReason(), that.getRestrictionReason())
+        && Objects.equals(getLanguageCode(), that.getLanguageCode())
+        && getUserType() == that.getUserType();
+  }
+
+  @Override
+  public int hashCode() {
+    return Objects.hash(getId(), getUsername(), getFirstName(), getLastName(), getPhoneNumber(), getContact(),
+        getMutualContact(), getPremium(), getCloseFriend(), getRestrictionReason(), getLanguageCode(), getUserType());
   }
 
   public enum UserType {
