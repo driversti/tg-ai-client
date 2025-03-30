@@ -1,7 +1,9 @@
 package live.yurii.tgaiclient.common;
 
 import live.yurii.tgaiclient.authorization.UpdateAuthorizationStateEvent;
+import live.yurii.tgaiclient.chats.UpdateBasicGroupEvent;
 import live.yurii.tgaiclient.chats.UpdateNewChatEvent;
+import live.yurii.tgaiclient.folders.UpdateChatFoldersEvent;
 import live.yurii.tgaiclient.messages.UpdateMessageContentEvent;
 import live.yurii.tgaiclient.messages.UpdateMessageEditedEvent;
 import live.yurii.tgaiclient.messages.UpdateNewMessageEvent;
@@ -79,8 +81,12 @@ public class MainUpdateHandler implements Client.ResultHandler {
       case TdApi.UpdateChatPosition.CONSTRUCTOR -> skip("UpdateChatPosition");
 
       // folders
+      case TdApi.UpdateChatFolders.CONSTRUCTOR ->
+          publisher.publishEvent(new UpdateChatFoldersEvent(this, (TdApi.UpdateChatFolders) object));
 
       // basic groups
+      case TdApi.UpdateBasicGroup.CONSTRUCTOR ->
+          publisher.publishEvent(new UpdateBasicGroupEvent(this, (TdApi.UpdateBasicGroup) object));
 
       // supergroups
       case TdApi.UpdateSupergroup.CONSTRUCTOR -> skip("UpdateSupergroup");

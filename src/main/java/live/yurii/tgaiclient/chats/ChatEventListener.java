@@ -30,9 +30,19 @@ public class ChatEventListener {
         );
   }
 
+  @Transactional
+  @EventListener
+  public void onUpdateBasicGroupEvent(UpdateBasicGroupEvent event) {
+    TdApi.UpdateBasicGroup update = event.getUpdate();
+    if (update == null || update.getConstructor() != TdApi.UpdateBasicGroup.CONSTRUCTOR) {
+      return;
+    }
+    // I don't know yet how this update can be used
+  }
+
   private void updateChat(ChatEntity chatEntity, TdApi.UpdateNewChat update) {
     chatMapper.updateEntity(chatEntity, update.chat);
-    log.debug("Updated chat {}", chatEntity.getTitle());
+    log.trace("Updated chat {}", chatEntity.getTitle());
   }
 
   private void addChat(TdApi.UpdateNewChat update) {
