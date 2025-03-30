@@ -3,7 +3,9 @@ package live.yurii.tgaiclient.common;
 import live.yurii.tgaiclient.authorization.UpdateAuthorizationStateEvent;
 import live.yurii.tgaiclient.chats.UpdateBasicGroupEvent;
 import live.yurii.tgaiclient.chats.UpdateNewChatEvent;
+import live.yurii.tgaiclient.folders.UpdateChatAddedToListEvent;
 import live.yurii.tgaiclient.folders.UpdateChatFoldersEvent;
+import live.yurii.tgaiclient.folders.UpdateChatRemovedFromListEvent;
 import live.yurii.tgaiclient.messages.UpdateMessageContentEvent;
 import live.yurii.tgaiclient.messages.UpdateMessageEditedEvent;
 import live.yurii.tgaiclient.messages.UpdateNewMessageEvent;
@@ -67,7 +69,6 @@ public class MainUpdateHandler implements Client.ResultHandler {
       // users
       case TdApi.UpdateUserStatus.CONSTRUCTOR -> skip("UpdateUserStatus");
       case TdApi.UpdateUser.CONSTRUCTOR -> publisher.publishEvent(new UpdateUserEvent(this, (TdApi.UpdateUser) object));
-      case TdApi.UpdateChatAddedToList.CONSTRUCTOR -> skip("UpdateChatAddedToList");
 
       // chats
       case TdApi.UpdateUnreadMessageCount.CONSTRUCTOR -> skip("UpdateUnreadMessageCount");
@@ -79,10 +80,15 @@ public class MainUpdateHandler implements Client.ResultHandler {
       case TdApi.UpdateChatAvailableReactions.CONSTRUCTOR -> skip("UpdateChatAvailableReactions");
       case TdApi.UpdateChatIsTranslatable.CONSTRUCTOR -> skip("UpdateChatIsTranslatable");
       case TdApi.UpdateChatPosition.CONSTRUCTOR -> skip("UpdateChatPosition");
+      case TdApi.UpdateChatReadOutbox.CONSTRUCTOR -> skip("UpdateChatReadOutbox");
 
       // folders
       case TdApi.UpdateChatFolders.CONSTRUCTOR ->
           publisher.publishEvent(new UpdateChatFoldersEvent(this, (TdApi.UpdateChatFolders) object));
+      case TdApi.UpdateChatAddedToList.CONSTRUCTOR ->
+          publisher.publishEvent(new UpdateChatAddedToListEvent(this, (TdApi.UpdateChatAddedToList) object));
+      case TdApi.UpdateChatRemovedFromList.CONSTRUCTOR ->
+          publisher.publishEvent(new UpdateChatRemovedFromListEvent(this, (TdApi.UpdateChatRemovedFromList) object));
 
       // basic groups
       case TdApi.UpdateBasicGroup.CONSTRUCTOR ->

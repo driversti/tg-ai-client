@@ -32,13 +32,13 @@ public class UserEventListener {
 
   private void updateUser(UserEntity userEntity, TdApi.UpdateUser update) {
     userMapper.updateEntity(userEntity, update.user);
-    log.debug("Updated user {}", userEntity.identifiableName().trim());
+    log.trace("Updated user {}", userEntity.identifiableName().trim());
     userRepository.save(userEntity);
   }
 
   private void addUser(TdApi.UpdateUser update) {
     UserEntity entity = userMapper.toEntity(update.user);
     userRepository.save(entity);
-    log.debug("Added new user {}", entity.identifiableName().trim());
+    log.trace("Added new user {}", entity.identifiableName().trim());
   }
 }

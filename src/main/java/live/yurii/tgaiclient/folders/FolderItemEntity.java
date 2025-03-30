@@ -20,6 +20,7 @@ import java.io.Serializable;
 
 @Getter
 @Setter
+@AllArgsConstructor
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @Entity
 @Table(name = "folder_items")
@@ -33,7 +34,7 @@ public class FolderItemEntity {
   @JoinColumn(name = "folder_id", insertable = false, updatable = false)
   private FolderEntity folder;
 
-  public FolderItemEntity(FolderEntity folder, Long itemId) {
+  public FolderItemEntity(Long itemId, FolderEntity folder) {
     this.id = new FolderItemId(folder.getId(), itemId);
     this.folder = folder;
   }
