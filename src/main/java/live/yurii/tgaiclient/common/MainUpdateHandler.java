@@ -65,6 +65,19 @@ public class MainUpdateHandler implements Client.ResultHandler {
       case TdApi.UpdateDefaultBackground.CONSTRUCTOR -> skip("UpdateDefaultBackground");
       case TdApi.UpdateDiceEmojis.CONSTRUCTOR -> skip("UpdateDiceEmojis");
       case TdApi.UpdateActiveEmojiReactions.CONSTRUCTOR -> skip("UpdateActiveEmojiReactions");
+      case TdApi.UpdateAnimationSearchParameters.CONSTRUCTOR -> skip("UpdateAnimationSearchParameters");
+      case TdApi.UpdateAccentColors.CONSTRUCTOR -> skip("UpdateAccentColors");
+      case TdApi.UpdateProfileAccentColors.CONSTRUCTOR -> skip("UpdateProfileAccentColors");
+      case TdApi.UpdateSpeechRecognitionTrial.CONSTRUCTOR -> skip("UpdateSpeechRecognitionTrial");
+      case TdApi.UpdateAttachmentMenuBots.CONSTRUCTOR -> skip("UpdateAttachmentMenuBots");
+      case TdApi.UpdateFileDownloads.CONSTRUCTOR -> skip("UpdateFileDownloads");
+      case TdApi.UpdateAvailableMessageEffects.CONSTRUCTOR -> skip("UpdateAvailableMessageEffects");
+      case TdApi.UpdateDefaultPaidReactionType.CONSTRUCTOR -> skip("UpdateDefaultPaidReactionType");
+      case TdApi.UpdateChatThemes.CONSTRUCTOR -> skip("UpdateChatThemes");
+      case TdApi.UpdateReactionNotificationSettings.CONSTRUCTOR -> skip("UpdateReactionNotificationSettings");
+      case TdApi.UpdateStoryStealthMode.CONSTRUCTOR -> skip("UpdateStoryStealthMode");
+      case TdApi.UpdateDefaultReactionType.CONSTRUCTOR -> skip("UpdateDefaultReactionType");
+
 
       // users
       case TdApi.UpdateUserStatus.CONSTRUCTOR -> skip("UpdateUserStatus");

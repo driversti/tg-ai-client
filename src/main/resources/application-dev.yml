@@ -5,7 +5,8 @@ spring:
     compose:
       enabled: true
       file: compose.yaml
-
+  jpa:
+    show-sql: false
 logging:
   file:
     name: logs/tg-ai-client-dev.log

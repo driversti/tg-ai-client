@@ -43,7 +43,6 @@ public class AuthorizationEventHandler {
 
   @EventListener(LoginRequestEvent.class)
   public void sendTdlibParameters() {
-    log.debug("Credentials: {}", telegramCredentials);
     TdApi.SetTdlibParameters parameters = new TdApi.SetTdlibParameters();
     parameters.databaseDirectory = "tdlib";
     parameters.useMessageDatabase = true;
