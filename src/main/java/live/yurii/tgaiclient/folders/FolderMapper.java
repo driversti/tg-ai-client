@@ -13,4 +13,8 @@ public class FolderMapper {
   public void updateEntity(FolderEntity entity, TdApi.ChatFolderInfo info) {
     entity.setName(info.name.text.text);
   }
+
+  public FolderResponse toFolderResponse(FolderEntity entity) {
+    return new FolderResponse(entity.getId(), entity.getName());
+  }
 }

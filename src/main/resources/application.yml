@@ -16,6 +16,9 @@ spring:
         id.optimizer.pooled.preferred: none
 
 app:
+  n8n:
+    url: ${N8N_URL}
+    apiKey: ${N8N_API_KEY}
   telegram:
     client:
       developerId: ${DEVELOPER_ID}
@@ -30,7 +33,7 @@ app:
       systemLanguageCode: "en"
       deviceModel: "Desktop"
       applicationVersion: "1.0"
-      botToken: ${N8N_HOMELAB_BOT_TOKEN}
+      botToken: ${N8N_TG_BOT_TOKEN}
 
 logging:
   file:

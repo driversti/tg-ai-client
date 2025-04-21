@@ -7,15 +7,16 @@ import live.yurii.tgaiclient.errorhandling.UpdateExceptionHandler;
 import lombok.extern.slf4j.Slf4j;
 import org.drinkless.tdlib.Client;
 import org.drinkless.tdlib.TdApi;
-import org.springframework.ai.chat.client.ChatClient;
-import org.springframework.ai.embedding.EmbeddingModel;
-import org.springframework.ai.ollama.OllamaEmbeddingModel;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.boot.web.client.RestTemplateBuilder;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.http.client.SimpleClientHttpRequestFactory;
+import org.springframework.web.client.RestTemplate;
 
 import java.io.IOError;
 import java.io.IOException;
+import java.time.Duration;
 
 @Slf4j
 @Configuration
@@ -47,4 +48,19 @@ public class BeanConfig {
     return new TelegramCredentials(developerId, phoneNumber, email, password, apiId, apiHash, botToken);
   }
 
+  @Bean(name = "n8nClient")
+  RestTemplate n8nClient(@Value("${app.n8n.url}") String n8nUrl) {
+    SimpleClientHttpRequestFactory factory = new SimpleClientHttpRequestFactory();
+    factory.setConnectTimeout(10000); // 10 seconds
+    factory.setReadTimeout(30000); // 30 seconds
+
+    return new RestTemplateBuilder()
+        .requestFactory(() -> factory)
+        .connectTimeout(Duration.ofSeconds(10))
+        .readTimeout(Duration.ofSeconds(30))
+        .rootUri(n8nUrl)
+        .defaultHeader("Accept", "application/json")
+        .defaultHeader("Content-Type", "application/json")
+        .build();
+  }
 }

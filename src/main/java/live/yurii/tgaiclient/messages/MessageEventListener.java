@@ -56,10 +56,8 @@ public class MessageEventListener {
   @EventListener
   public void onUpdateMessageEditedEvent(UpdateMessageEditedEvent event) {
     TdApi.UpdateMessageEdited update = event.getUpdate();
-    if (update == null ||
-        update.getConstructor() != TdApi.UpdateMessageEdited.CONSTRUCTOR ||
-        ignoredChats.containsKey(update.messageId) ||
-        ignoredChats.containsKey(update.chatId)
+    if (update == null || update.getConstructor() != TdApi.UpdateMessageEdited.CONSTRUCTOR ||
+        ignoredChats.containsKey(update.messageId) || ignoredChats.containsKey(update.chatId)
     ) {
       return;
     }

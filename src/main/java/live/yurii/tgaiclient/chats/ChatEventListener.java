@@ -42,12 +42,12 @@ public class ChatEventListener {
 
   private void updateChat(ChatEntity chatEntity, TdApi.UpdateNewChat update) {
     chatMapper.updateEntity(chatEntity, update.chat);
-    log.trace("Updated chat {}", chatEntity.getTitle());
+    log.trace("Updated chat ID {} with title '{}'", chatEntity.getId(), chatEntity.getTitle());
   }
 
   private void addChat(TdApi.UpdateNewChat update) {
     ChatEntity entity = chatMapper.toEntity(update.chat);
     chatRepository.save(entity);
-    log.debug("Added new chat {}", entity.getTitle());
+    log.debug("Added new chat ID {} with title '{}'", entity.getId(), entity.getTitle());
   }
 }
