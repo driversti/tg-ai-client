@@ -31,7 +31,7 @@
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     <maven.compiler.source>${java.version}</maven.compiler.source>
     <maven.compiler.target>${java.version}</maven.compiler.target>
-    <spring-ai.version>1.0.0-M6</spring-ai.version>
+    <spring-ai.version>1.1.0-M1</spring-ai.version>
 <!--    <flyway.version>11.4.1</flyway.version>-->
     <hibernate-vector.version>6.6.1.Final</hibernate-vector.version>
     <postgresql.version>42.7.5</postgresql.version>
