@@ -16,7 +16,7 @@ RUN mvn dependency:go-offline
 COPY src ./src
 RUN mvn package -DskipTests
 
-FROM eclipse-temurin:21-jre-alpine
+FROM eclipse-temurin:25-jre-alpine
 LABEL authors="driversti"
 WORKDIR /app
 COPY --from=builder /app/target/*.jar app.jar
